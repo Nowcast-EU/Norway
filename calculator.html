@@ -1,1 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
+<!-- Primary Meta Tags -->
+<title>🇮🇹 Italy | Interactive Seat Calculator</title>
+<meta name="title" content="🇮🇹 Italy | Interactive Seat Calculator">
+<meta name="description" content="">
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://nowcast-eu.github.io/Italy/calculator.html">
+<meta property="og:title" content="🇮🇹 Italy | Interactive Seat Calculator">
+<meta property="og:description" content="">
+<meta property="og:image" content="https://nowcast-eu.github.io/Italy/thumbnail.png">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:url" content="https://nowcast-eu.github.io/Italy/calculator.html">
+<meta name="twitter:title" content="🇮🇹 Italy | Interactive Seat Calculator">
+<meta name="twitter:description" content="">
+<meta name="twitter:image" content="https://nowcast-eu.github.io/Italy/thumbnail.png">
+
+<link rel="icon" type="image/png" href="https://nowcast-eu.github.io/Italy/IT_favicon.png">
+
+<style>
+  body {
+    font-family: Inter, system-ui, sans-serif;
+    background: #fff;
+    color: #0f172a;
+    margin: 0;
+    padding: 0 24px 24px 24px;
+  }
+
+  /* Narrower padding on mobile */
+  @media (max-width: 768px) {
+    body {
+      padding: 0 8px 24px 8px;
+    }
+  }
+
+  h1 {
+    text-align: center;
+    font-weight: 600;
+    font-size: 1.6rem;
+    margin: 28px 0 12px 0;
+  }
+
+  table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    margin-top: 12px; 
+    table-layout: fixed; 
+  }
+
+  th, td { 
+    padding: 4px 6px; 
+    border: 1px solid #e2e8f0; 
+    text-align: left; 
+    word-wrap: break-word; 
+  }
+
+  th { background: #f1f5f9; font-weight: 600; }
+  td.party-column { font-weight: bold; position: relative; padding-left: 14px; color: black; }
+  td.party-column::before { content: ""; position: absolute; left: 0; top: 0; width: 8px; height: 100%; border-radius: 2px 0 0 2px; background-color: var(--party-color); }
+  td.ge2024-column { font-style: italic; color: #999999; }
+  td.seats-column, td.diff-column { font-weight: bold; text-align: center; }
+  .diff-column.positive { color: #008500; }
+  .diff-column.negative { color: #bb0000; }
+  .diff-column.equal { color: #555555; }
+
+  .input-wrapper { display: flex; align-items: center; justify-content: flex-start; }
+  .input-wrapper input {
+    width: 50px; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px;
+    text-align: left; margin-right: 4px; transition: border-color 0.3s ease;
+  }
+  .percent-sign { font-size: 14px; }
+
+  /* --- BUTTONS --- */
+  .button-container { 
+    display: flex; 
+    gap: 8px; 
+    margin-top: 14px; 
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  button#calculate, button#reset {
+    background: #008500; 
+    color: #fff; 
+    border: none; 
+    border-radius: 6px;
+    padding: 8px 14px; 
+    cursor: pointer; 
+    transition: background 0.3s ease;
+  }
+
+  /* Calculate = 80%, Reset = 20% */
+  button#calculate { flex: 0 0 78%; }
+  button#reset { flex: 0 0 20%; }
+
+  tfoot td { font-weight: bold; text-align: center; background: #f1f5f9; }
+  tfoot td:first-child { text-align: left; padding-left: 14px; }
+
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type=number] { -moz-appearance: textfield; }
+
+  /* Coalition builder */
+  #coalition-builder { margin-top: 48px; }
+  .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  h3 { margin: 0; }
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-bottom: 15px; }
+  .legend-item {
+    display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;
+    border: 1px solid #ccc; border-radius: 8px; padding: 6px 10px; background: #f3f3f3;
+    transition: all 0.25s ease; opacity: 0.6; font-weight: normal;
+  }
+  .legend-item:hover { transform: translateY(-1px); }
+  .legend-item.active { opacity: 1; background: #ffffff; border-color: #999; box-shadow: 0 1px 3px rgba(0,0,0,0.15); font-weight: bold; }
+  .legend-box { width: 20px; height: 20px; border-radius: 4px; }
+  .bar-container { position: relative; height: 117px; background: #f0f0f0; border-radius: 10px; overflow: hidden; margin-bottom: 12px; width: 100%; }
+  .coalition-overlay { position: absolute; top: 0; left: 0; height: 100%; width: 0%; border-top-left-radius: 10px; border-bottom-left-radius: 10px; display: flex; overflow: hidden; transition: width 1s ease; }
+  .segment { height: 100%; flex-shrink: 0; border-radius: 0; }
+  .majority-line {
+    position: absolute; top: 0; bottom: 0; width: 2px;
+    background: repeating-linear-gradient(to bottom,#333,#333 5px,transparent 5px,transparent 10px);
+    left: 50%;
+  }
+  .counter { font-size: 22px; font-weight: bold; text-align: center; margin-bottom: 8px; }
+  .note { font-size: 13px; color: #555; text-align: center; }
+
+  /* --- MOBILE VIEW --- */
+  @media (max-width: 768px) {
+    table, th, td { font-size: 13px; }
+    .counter { font-size: 18px; }
+    h3 { font-size: 16px; }
+    .legend-item { font-size: 12px; padding: 5px 8px; }
+    .input-wrapper input { width: 45px; }
+
+    /* 👇 manually control column widths on mobile */
+    table th:nth-child(1), table td:nth-child(1) { width: 20%; } /* Party */
+    table th:nth-child(2), table td:nth-child(2) { width: 15%; } /* 2023 */
+    table th:nth-child(3), table td:nth-child(3) { width: 25%; } /* Votes */
+    table th:nth-child(4), table td:nth-child(4) { width: 20%; } /* Seats */
+    table th:nth-child(5), table td:nth-child(5) { width: 20%; } /* +/- */
+  }
+
+  @media (max-width: 480px) {
+    table, th, td { font-size: 12px; }
+    .input-wrapper input { width: 40px; }
+  }
+/* --- Uniform table header height + centered header text --- */
+th {
+  height: 30px;           /* 👈 match td height for visual consistency */
+  font-weight: 650;
+  text-align: center;     /* 👈 header text centered only */
+  vertical-align: middle; /* 👈 keep it perfectly aligned vertically */
+}
+
+td {
+  height: 30px;           /* 👈 match th height */
+  vertical-align: middle; /* 👈 ensures text sits evenly across rows */
+}
+/* --- Make the Totals row shorter --- */
+tfoot td {
+  height: 20px;             /* roughly 2/3 of 36px */
+  vertical-align: middle;
+}
+
+
+/* --- Responsive rectangular tab switcher --- */
+/* --- Final rectangular tab switcher --- */
+.tab-switcher {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f4f4f4;
+  border-radius: 12px;
+  padding: 3px;
+  border: 1px solid #d0d0d0;
+  overflow: hidden;
+  width: 140px;             /* base width desktop */
+  max-width: 100%;
+  height: 38px;
+  box-sizing: border-box;
+  -webkit-user-select: none; /* 👈 prevent highlight */
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.tab-btn {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  color: #111;
+  text-align: center;
+  line-height: 1;
+  white-space: nowrap;
+  transition: color 0.25s ease, font-weight 0.25s ease;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent; /* 👈 remove blue tap flash */
+}
+
+.tab-btn.active {
+  font-weight: 700;
+}
+
+.tab-btn:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.tab-pill {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  right: 50%;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 1;
+}
+
+/* --- Mobile scaling + perfect edge alignment --- */
+@media (max-width: 480px) {
+  .tab-switcher {
+    width: 120px;
+    height: 34px;
+    padding: 3px;
+  }
+  .tab-btn {
+    font-size: 13px;
+  }
+  .tab-pill {
+    top: 3px;
+    bottom: 3px;
+    left: 3px;
+    right: 50%;
+  }
+}
+
+/* --- Highlight CDX and CSX rows (only bottom line, neutral tint) --- */
+.party-row.CDX td {
+  background-color: #f5f5f5;   /* light neutral grey */
+  border-bottom: 2px solid #0000FF; /* bold blue line below */
+  height: 16px;                /* slightly thinner row */
+  vertical-align: middle;
+}
+
+.party-row.CSX td {
+  background-color: #f5f5f5;   /* light neutral grey */
+  border-bottom: 2px solid #FF0000; /* bold red line below */
+  height: 16px;
+  vertical-align: middle;
+}
+  
+  /* --- Subtle highlight for OTH row --- */
+.party-row.OTH td {
+  background-color: #f5f5f5;   /* same light grey as CDX/CSX */
+  height: 20px;                /* consistent thinner height */
+  vertical-align: middle;
+}
+
+  /* --- Disabled coalition input boxes --- */
+.disabled-input {
+  background-color: rgba(200, 200, 200, 0.25);
+  color: #555;
+  cursor: not-allowed;
+  border: 1px solid #ccc;
+}
+
+  /* --- Smaller input boxes for coalition total rows (CDX / CSX) --- */
+.party-row.CDX .input-wrapper input,
+.party-row.CSX .input-wrapper input {
+  height: var(--coalition-input-h, 15px); /* adjustable height variable */
+  padding: 2px 4px;
+  font-size: 12px;
+}
+
+</style>
+</head>
+
+<body>
+<h1>Italy | @Nowcast_EU Interactive Seat Calculator</h1>
+  
+<table>
+  <thead>
+    <tr>
+      <th>Party</th>
+      <th>2022</th>
+      <th>Votes (%)</th>
+      <th>Seats</th>
+      <th>+/- 2022</th>
+    </tr>
+  </thead>
+  <tbody id="tbody"></tbody>
+  <tfoot>
+    <tr>
+      <td>Totals</td>
+      <td></td>
+      <td id="total-votes">0.0%</td>
+      <td id="total-seats">0</td>
+      <td></td>
+    </tr>
+  </tfoot>
+</table>
+
+<div class="button-container">
+  <button id="calculate">Calculate</button>
+  <button id="reset">Reset</button>
+</div>
+
+<div id="coalition-builder">
+<div class="header-container">
+  <h3>Coalition Builder (User Generated)</h3>
+
+  <div class="tab-switcher">
+    <div class="tab-pill" id="tab-pill"></div>
+    <button class="tab-btn active" id="tab-result">Result</button>
+    <button class="tab-btn" id="tab-2023">2022</button>
+  </div>
+</div>
+
+  <div class="legend" id="legend"></div>
+  <div class="bar-container" id="bar">
+    <div class="coalition-overlay" id="coalition-overlay"></div>
+    <div class="majority-line" title="Majority (201 seats)"></div>
+  </div>
+  <div class="counter" id="counter">0 / 400</div>
+  <div class="note">Majority = 201 seats</div>
+</div>
+
+<script>
+const BASELINE = {"baseline_national": {"FdI": 0.305, "Lega": 0.084, "Forza": 0.083, "NM": 0.01, "CDX": 0.482, "PD": 0.22, "M5S": 0.127, "AVS": 0.066, "IV": 0.024, "+E": 0.017, "CSX": 0.454, "Azione": 0.031, "OTH": 0.034},
+    
+ "constituencies": [{"name": "Aosta", "CDX": 0.0, "CSX": 0.0, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.0, "IV": 0.0, "OTH": 1.0},
+  {"name": "Abruzzo - U01", "CDX": 0.503, "CSX": 0.448, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.023, "IV": 0.0, "OTH": 0.026},
+  {"name": "Abruzzo - U02", "CDX": 0.504, "CSX": 0.442, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.025, "IV": 0.0, "OTH": 0.029},
+  {"name": "Abruzzo - U03", "CDX": 0.559, "CSX": 0.393, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.023, "IV": 0.0, "OTH": 0.024},
+  {"name": "Basilicata - U01", "CDX": 0.424, "CSX": 0.512, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.038, "IV": 0.0, "OTH": 0.026},
+  {"name": "Calabria - U01", "CDX": 0.419, "CSX": 0.543, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.012, "IV": 0.0, "OTH": 0.026},
+  {"name": "Calabria - U02", "CDX": 0.405, "CSX": 0.545, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.017, "IV": 0.0, "OTH": 0.033},
+  {"name": "Calabria - U03", "CDX": 0.435, "CSX": 0.511, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.018, "IV": 0.0, "OTH": 0.036},
+  {"name": "Calabria - U04", "CDX": 0.542, "CSX": 0.395, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.016, "IV": 0.0, "OTH": 0.046},
+  {"name": "Calabria - U05", "CDX": 0.522, "CSX": 0.429, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.017, "IV": 0.0, "OTH": 0.032},
+  {"name": "Campania 1 - U01", "CDX": 0.335, "CSX": 0.63, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.015, "IV": 0.0, "OTH": 0.02},
+  {"name": "Campania 1 - U02", "CDX": 0.254, "CSX": 0.687, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.028, "IV": 0.0, "OTH": 0.031},
+  {"name": "Campania 1 - U03", "CDX": 0.228, "CSX": 0.726, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.019, "IV": 0.0, "OTH": 0.027},
+  {"name": "Campania 1 - U04", "CDX": 0.282, "CSX": 0.682, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.016, "IV": 0.0, "OTH": 0.02},
+  {"name": "Campania 1 - U05", "CDX": 0.263, "CSX": 0.698, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.02, "IV": 0.0, "OTH": 0.019},
+  {"name": "Campania 1 - U06", "CDX": 0.374, "CSX": 0.576, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.025, "IV": 0.0, "OTH": 0.025},
+  {"name": "Campania 1 - U07", "CDX": 0.374, "CSX": 0.585, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.024, "IV": 0.0, "OTH": 0.017},
+  {"name": "Campania 2 - U01", "CDX": 0.425, "CSX": 0.538, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.017, "IV": 0.0, "OTH": 0.019},
+  {"name": "Campania 2 - U02", "CDX": 0.392, "CSX": 0.563, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.018, "IV": 0.0, "OTH": 0.027},
+  {"name": "Campania 2 - U03", "CDX": 0.437, "CSX": 0.449, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.017, "IV": 0.0, "OTH": 0.097},
+  {"name": "Campania 2 - U04", "CDX": 0.366, "CSX": 0.585, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.02, "IV": 0.0, "OTH": 0.029},
+  {"name": "Campania 2 - U05", "CDX": 0.428, "CSX": 0.531, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.017, "IV": 0.0, "OTH": 0.025},
+  {"name": "Campania 2 - U06", "CDX": 0.402, "CSX": 0.544, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.028, "IV": 0.0, "OTH": 0.026},
+  {"name": "Campania 2 - U07", "CDX": 0.508, "CSX": 0.452, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.018, "IV": 0.0, "OTH": 0.022},
+  {"name": "Emilia-Romagna - U01", "CDX": 0.573, "CSX": 0.37, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.029, "IV": 0.0, "OTH": 0.029},
+  {"name": "Emilia-Romagna - U02", "CDX": 0.475, "CSX": 0.459, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.036, "IV": 0.0, "OTH": 0.03},
+  {"name": "Emilia-Romagna - U03", "CDX": 0.377, "CSX": 0.557, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.034, "IV": 0.0, "OTH": 0.032},
+  {"name": "Emilia-Romagna - U04", "CDX": 0.416, "CSX": 0.518, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.038, "IV": 0.0, "OTH": 0.029},
+  {"name": "Emilia-Romagna - U05", "CDX": 0.4, "CSX": 0.532, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.034, "IV": 0.0, "OTH": 0.034},
+  {"name": "Emilia-Romagna - U06", "CDX": 0.301, "CSX": 0.62, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.043, "IV": 0.0, "OTH": 0.036},
+  {"name": "Emilia-Romagna - U07", "CDX": 0.413, "CSX": 0.524, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.031, "IV": 0.0, "OTH": 0.033},
+  {"name": "Emilia-Romagna - U08", "CDX": 0.417, "CSX": 0.514, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.034, "IV": 0.0, "OTH": 0.035},
+  {"name": "Emilia-Romagna - U09", "CDX": 0.524, "CSX": 0.419, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.027, "IV": 0.0, "OTH": 0.03},
+  {"name": "Emilia-Romagna - U10", "CDX": 0.45, "CSX": 0.482, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.034, "IV": 0.0, "OTH": 0.035},
+  {"name": "Emilia-Romagna - U11", "CDX": 0.477, "CSX": 0.464, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.022, "IV": 0.0, "OTH": 0.037},
+  {"name": "Friuli-Venezia Giulia - U01", "CDX": 0.604, "CSX": 0.325, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.035, "IV": 0.0, "OTH": 0.036},
+  {"name": "Friuli-Venezia Giulia - U02", "CDX": 0.57, "CSX": 0.356, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.035, "IV": 0.0, "OTH": 0.038},
+  {"name": "Friuli-Venezia Giulia - U03", "CDX": 0.477, "CSX": 0.443, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.03, "IV": 0.0, "OTH": 0.05},
+  {"name": "Lazio 1 - U01", "CDX": 0.345, "CSX": 0.564, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.065, "IV": 0.0, "OTH": 0.025},
+  {"name": "Lazio 1 - U02", "CDX": 0.399, "CSX": 0.537, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.038, "IV": 0.0, "OTH": 0.027},
+  {"name": "Lazio 1 - U03", "CDX": 0.475, "CSX": 0.473, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.023, "IV": 0.0, "OTH": 0.028},
+  {"name": "Lazio 1 - U04", "CDX": 0.386, "CSX": 0.549, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.038, "IV": 0.0, "OTH": 0.026},
+  {"name": "Lazio 1 - U05", "CDX": 0.442, "CSX": 0.495, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.036, "IV": 0.0, "OTH": 0.027},
+  {"name": "Lazio 1 - U06", "CDX": 0.427, "CSX": 0.51, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.036, "IV": 0.0, "OTH": 0.027},
+  {"name": "Lazio 1 - U07", "CDX": 0.463, "CSX": 0.469, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.046, "IV": 0.0, "OTH": 0.022},
+  {"name": "Lazio 1 - U08", "CDX": 0.534, "CSX": 0.415, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.025, "IV": 0.0, "OTH": 0.026},
+  {"name": "Lazio 1 - U09", "CDX": 0.55, "CSX": 0.408, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.019, "IV": 0.0, "OTH": 0.023},
+  {"name": "Lazio 2 - U01", "CDX": 0.574, "CSX": 0.375, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.023, "IV": 0.0, "OTH": 0.027},
+  {"name": "Lazio 2 - U02", "CDX": 0.555, "CSX": 0.396, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.023, "IV": 0.0, "OTH": 0.026},
+  {"name": "Lazio 2 - U03", "CDX": 0.587, "CSX": 0.37, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.023, "IV": 0.0, "OTH": 0.019},
+  {"name": "Lazio 2 - U04", "CDX": 0.587, "CSX": 0.37, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.024, "IV": 0.0, "OTH": 0.018},
+  {"name": "Lazio 2 - U05", "CDX": 0.582, "CSX": 0.375, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.023, "IV": 0.0, "OTH": 0.02},
+  {"name": "Liguria - U01", "CDX": 0.552, "CSX": 0.386, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.026, "IV": 0.0, "OTH": 0.035},
+  {"name": "Liguria - U02", "CDX": 0.417, "CSX": 0.526, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.024, "IV": 0.0, "OTH": 0.033},
+  {"name": "Liguria - U03", "CDX": 0.395, "CSX": 0.539, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.034, "IV": 0.0, "OTH": 0.031},
+  {"name": "Liguria - U04", "CDX": 0.493, "CSX": 0.444, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.029, "IV": 0.0, "OTH": 0.035},
+  {"name": "Lombardia 1 - U01", "CDX": 0.51, "CSX": 0.423, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.044, "IV": 0.0, "OTH": 0.023},
+  {"name": "Lombardia 1 - U02", "CDX": 0.587, "CSX": 0.356, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.035, "IV": 0.0, "OTH": 0.022},
+  {"name": "Lombardia 1 - U03", "CDX": 0.482, "CSX": 0.452, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.041, "IV": 0.0, "OTH": 0.025},
+  {"name": "Lombardia 1 - U04", "CDX": 0.532, "CSX": 0.409, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.035, "IV": 0.0, "OTH": 0.024},
+  {"name": "Lombardia 1 - U05", "CDX": 0.554, "CSX": 0.391, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.033, "IV": 0.0, "OTH": 0.022},
+  {"name": "Lombardia 1 - U06", "CDX": 0.48, "CSX": 0.46, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.036, "IV": 0.0, "OTH": 0.025},
+  {"name": "Lombardia 1 - U07", "CDX": 0.394, "CSX": 0.535, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.045, "IV": 0.0, "OTH": 0.026},
+  {"name": "Lombardia 1 - U08", "CDX": 0.413, "CSX": 0.515, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.046, "IV": 0.0, "OTH": 0.026},
+  {"name": "Lombardia 1 - U09", "CDX": 0.342, "CSX": 0.55, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.09, "IV": 0.0, "OTH": 0.018},
+  {"name": "Lombardia 2 - U01", "CDX": 0.588, "CSX": 0.35, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.037, "IV": 0.0, "OTH": 0.025},
+  {"name": "Lombardia 2 - U02", "CDX": 0.581, "CSX": 0.357, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.039, "IV": 0.0, "OTH": 0.024},
+  {"name": "Lombardia 2 - U03", "CDX": 0.584, "CSX": 0.351, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.041, "IV": 0.0, "OTH": 0.024},
+  {"name": "Lombardia 2 - U04", "CDX": 0.665, "CSX": 0.28, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.032, "IV": 0.0, "OTH": 0.023},
+  {"name": "Lombardia 2 - U05", "CDX": 0.595, "CSX": 0.343, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.039, "IV": 0.0, "OTH": 0.023},
+  {"name": "Lombardia 3 - U01", "CDX": 0.643, "CSX": 0.304, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.031, "IV": 0.0, "OTH": 0.022},
+  {"name": "Lombardia 3 - U02", "CDX": 0.578, "CSX": 0.354, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.043, "IV": 0.0, "OTH": 0.024},
+  {"name": "Lombardia 3 - U03", "CDX": 0.663, "CSX": 0.284, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.032, "IV": 0.0, "OTH": 0.021},
+  {"name": "Lombardia 3 - U04", "CDX": 0.534, "CSX": 0.401, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.043, "IV": 0.0, "OTH": 0.023},
+  {"name": "Lombardia 3 - U05", "CDX": 0.65, "CSX": 0.297, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.032, "IV": 0.0, "OTH": 0.022},
+  {"name": "Lombardia 4 - U01", "CDX": 0.595, "CSX": 0.348, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.032, "IV": 0.0, "OTH": 0.025},
+  {"name": "Lombardia 4 - U02", "CDX": 0.584, "CSX": 0.364, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.029, "IV": 0.0, "OTH": 0.022},
+  {"name": "Lombardia 4 - U03", "CDX": 0.605, "CSX": 0.343, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.029, "IV": 0.0, "OTH": 0.024},
+  {"name": "Lombardia 4 - U04", "CDX": 0.552, "CSX": 0.388, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.032, "IV": 0.0, "OTH": 0.029},
+  {"name": "Marche - U01", "CDX": 0.526, "CSX": 0.413, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.025, "IV": 0.0, "OTH": 0.035},
+  {"name": "Marche - U02", "CDX": 0.542, "CSX": 0.392, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.029, "IV": 0.0, "OTH": 0.037},
+  {"name": "Marche - U03", "CDX": 0.434, "CSX": 0.496, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.031, "IV": 0.0, "OTH": 0.04},
+  {"name": "Marche - U04", "CDX": 0.49, "CSX": 0.444, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.029, "IV": 0.0, "OTH": 0.036},
+  {"name": "Molise - U01", "CDX": 0.469, "CSX": 0.491, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.018, "IV": 0.0, "OTH": 0.022},
+  {"name": "Piemonte 1 - U01", "CDX": 0.351, "CSX": 0.572, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.049, "IV": 0.0, "OTH": 0.029},
+  {"name": "Piemonte 1 - U02", "CDX": 0.401, "CSX": 0.535, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.033, "IV": 0.0, "OTH": 0.031},
+  {"name": "Piemonte 1 - U03", "CDX": 0.443, "CSX": 0.496, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.03, "IV": 0.0, "OTH": 0.031},
+  {"name": "Piemonte 1 - U04", "CDX": 0.52, "CSX": 0.417, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.032, "IV": 0.0, "OTH": 0.031},
+  {"name": "Piemonte 1 - U05", "CDX": 0.473, "CSX": 0.458, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.032, "IV": 0.0, "OTH": 0.037},
+  {"name": "Piemonte 2 - U01", "CDX": 0.57, "CSX": 0.374, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.028, "IV": 0.0, "OTH": 0.028},
+  {"name": "Piemonte 2 - U02", "CDX": 0.572, "CSX": 0.372, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.032, "IV": 0.0, "OTH": 0.023},
+  {"name": "Piemonte 2 - U03", "CDX": 0.588, "CSX": 0.351, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.033, "IV": 0.0, "OTH": 0.028},
+  {"name": "Piemonte 2 - U04", "CDX": 0.578, "CSX": 0.364, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.033, "IV": 0.0, "OTH": 0.025},
+  {"name": "Piemonte 2 - U05", "CDX": 0.582, "CSX": 0.356, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.037, "IV": 0.0, "OTH": 0.025},
+  {"name": "Puglia - U01", "CDX": 0.38, "CSX": 0.59, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.014, "IV": 0.0, "OTH": 0.015},
+  {"name": "Puglia - U02", "CDX": 0.432, "CSX": 0.544, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.011, "IV": 0.0, "OTH": 0.013},
+  {"name": "Puglia - U03", "CDX": 0.443, "CSX": 0.52, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.024, "IV": 0.0, "OTH": 0.013},
+  {"name": "Puglia - U04", "CDX": 0.441, "CSX": 0.523, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.019, "IV": 0.0, "OTH": 0.017},
+  {"name": "Puglia - U05", "CDX": 0.4, "CSX": 0.562, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.021, "IV": 0.0, "OTH": 0.016},
+  {"name": "Puglia - U06", "CDX": 0.477, "CSX": 0.484, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.02, "IV": 0.0, "OTH": 0.02},
+  {"name": "Puglia - U07", "CDX": 0.478, "CSX": 0.489, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.015, "IV": 0.0, "OTH": 0.018},
+  {"name": "Puglia - U08", "CDX": 0.445, "CSX": 0.515, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.018, "IV": 0.0, "OTH": 0.023},
+  {"name": "Puglia - U09", "CDX": 0.472, "CSX": 0.49, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.018, "IV": 0.0, "OTH": 0.02},
+  {"name": "Puglia - U10", "CDX": 0.492, "CSX": 0.469, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.019, "IV": 0.0, "OTH": 0.019},
+  {"name": "Sardegna - U01", "CDX": 0.423, "CSX": 0.524, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.02, "IV": 0.0, "OTH": 0.033},
+  {"name": "Sardegna - U02", "CDX": 0.467, "CSX": 0.488, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.015, "IV": 0.0, "OTH": 0.03},
+  {"name": "Sardegna - U03", "CDX": 0.453, "CSX": 0.498, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.018, "IV": 0.0, "OTH": 0.031},
+  {"name": "Sardegna - U04", "CDX": 0.452, "CSX": 0.507, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.016, "IV": 0.0, "OTH": 0.024},
+  {"name": "Sicilia 1 - U01", "CDX": 0.322, "CSX": 0.608, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.022, "IV": 0.0, "OTH": 0.048},
+  {"name": "Sicilia 1 - U02", "CDX": 0.41, "CSX": 0.519, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.018, "IV": 0.0, "OTH": 0.053},
+  {"name": "Sicilia 1 - U03", "CDX": 0.445, "CSX": 0.465, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.018, "IV": 0.0, "OTH": 0.072},
+  {"name": "Sicilia 1 - U04", "CDX": 0.405, "CSX": 0.498, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.033, "IV": 0.0, "OTH": 0.064},
+  {"name": "Sicilia 1 - U05", "CDX": 0.429, "CSX": 0.496, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.022, "IV": 0.0, "OTH": 0.053},
+  {"name": "Sicilia 1 - U06", "CDX": 0.413, "CSX": 0.501, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.024, "IV": 0.0, "OTH": 0.062},
+  {"name": "Sicilia 2 - U01", "CDX": 0.453, "CSX": 0.506, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.019, "IV": 0.0, "OTH": 0.022},
+  {"name": "Sicilia 2 - U02", "CDX": 0.413, "CSX": 0.507, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.018, "IV": 0.0, "OTH": 0.062},
+  {"name": "Sicilia 2 - U03", "CDX": 0.472, "CSX": 0.428, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.022, "IV": 0.0, "OTH": 0.078},
+  {"name": "Sicilia 2 - U04", "CDX": 0.431, "CSX": 0.529, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.021, "IV": 0.0, "OTH": 0.02},
+  {"name": "Sicilia 2 - U05", "CDX": 0.431, "CSX": 0.425, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.016, "IV": 0.0, "OTH": 0.128},
+  {"name": "Sicilia 2 - U06", "CDX": 0.384, "CSX": 0.39, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.017, "IV": 0.0, "OTH": 0.209},
+  {"name": "Toscana - U01", "CDX": 0.451, "CSX": 0.486, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.035, "IV": 0.0, "OTH": 0.029},
+  {"name": "Toscana - U02", "CDX": 0.497, "CSX": 0.438, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.033, "IV": 0.0, "OTH": 0.032},
+  {"name": "Toscana - U03", "CDX": 0.515, "CSX": 0.421, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.035, "IV": 0.0, "OTH": 0.029},
+  {"name": "Toscana - U04", "CDX": 0.444, "CSX": 0.499, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.028, "IV": 0.0, "OTH": 0.029},
+  {"name": "Toscana - U05", "CDX": 0.404, "CSX": 0.526, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.026, "IV": 0.0, "OTH": 0.043},
+  {"name": "Toscana - U06", "CDX": 0.445, "CSX": 0.489, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.038, "IV": 0.0, "OTH": 0.028},
+  {"name": "Toscana - U07", "CDX": 0.305, "CSX": 0.607, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.055, "IV": 0.0, "OTH": 0.033},
+  {"name": "Toscana - U08", "CDX": 0.349, "CSX": 0.578, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.042, "IV": 0.0, "OTH": 0.03},
+  {"name": "Toscana - U09", "CDX": 0.471, "CSX": 0.472, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.034, "IV": 0.0, "OTH": 0.023},
+  {"name": "Trentino-Alto Adige - U01", "CDX": 0.443, "CSX": 0.408, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.034, "IV": 0.0, "OTH": 0.115},
+  {"name": "Trentino-Alto Adige - U02", "CDX": 0.46, "CSX": 0.385, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.03, "IV": 0.0, "OTH": 0.125},
+  {"name": "Trentino-Alto Adige - U03", "CDX": 0.282, "CSX": 0.302, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.018, "IV": 0.0, "OTH": 0.398},
+  {"name": "Trentino-Alto Adige - U04", "CDX": 0.123, "CSX": 0.239, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.005, "IV": 0.0, "OTH": 1.0},
+  {"name": "Umbria - U01", "CDX": 0.517, "CSX": 0.423, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.028, "IV": 0.0, "OTH": 0.031},
+  {"name": "Umbria - U02", "CDX": 0.494, "CSX": 0.441, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.034, "IV": 0.0, "OTH": 0.031},
+  {"name": "Veneto 1 - U01", "CDX": 0.551, "CSX": 0.388, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.03, "IV": 0.0, "OTH": 0.03},
+  {"name": "Veneto 1 - U02", "CDX": 0.585, "CSX": 0.354, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.029, "IV": 0.0, "OTH": 0.032},
+  {"name": "Veneto 1 - U03", "CDX": 0.613, "CSX": 0.322, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.035, "IV": 0.0, "OTH": 0.029},
+  {"name": "Veneto 1 - U04", "CDX": 0.68, "CSX": 0.257, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.029, "IV": 0.0, "OTH": 0.034},
+  {"name": "Veneto 1 - U05", "CDX": 0.605, "CSX": 0.327, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.031, "IV": 0.0, "OTH": 0.038},
+  {"name": "Veneto 2 - U01", "CDX": 0.654, "CSX": 0.294, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.025, "IV": 0.0, "OTH": 0.027},
+  {"name": "Veneto 2 - U02", "CDX": 0.643, "CSX": 0.295, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.031, "IV": 0.0, "OTH": 0.032},
+  {"name": "Veneto 2 - U03", "CDX": 0.524, "CSX": 0.406, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.039, "IV": 0.0, "OTH": 0.03},
+  {"name": "Veneto 2 - U04", "CDX": 0.628, "CSX": 0.305, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.032, "IV": 0.0, "OTH": 0.035},
+  {"name": "Veneto 2 - U05", "CDX": 0.615, "CSX": 0.319, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.035, "IV": 0.0, "OTH": 0.031},
+  {"name": "Veneto 2 - U06", "CDX": 0.586, "CSX": 0.349, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.037, "IV": 0.0, "OTH": 0.029},
+  {"name": "Veneto 2 - U07", "CDX": 0.692, "CSX": 0.253, "FdI": 0.0, "Lega": 0.0, "Forza": 0.0, "NM": 0.0, "PD": 0.0, "AVS": 0.0, "+E": 0.0, "M5S": 0.0, "Azione": 0.027, "IV": 0.0, "OTH": 0.027},
+  {"name": "AT LARGE", "CDX": 0.0, "CSX": 0.0, "FdI": 0.305, "Lega": 0.084, "Forza": 0.083, "NM": 0.01, "PD": 0.22, "AVS": 0.066, "+E": 0.017, "M5S": 0.127, "Azione": 0.031, "IV": 0.024, "OTH": 0.0}]};
+
+const CONSTITUENCY_SEATS = {
+"Aosta": 1,
+  "Abruzzo - U01": 1,
+  "Abruzzo - U02": 1,
+  "Abruzzo - U03": 1,
+  "Basilicata - U01": 1,
+  "Calabria - U01": 1,
+  "Calabria - U02": 1,
+  "Calabria - U03": 1,
+  "Calabria - U04": 1,
+  "Calabria - U05": 1,
+  "Campania 1 - U01": 1,
+  "Campania 1 - U02": 1,
+  "Campania 1 - U03": 1,
+  "Campania 1 - U04": 1,
+  "Campania 1 - U05": 1,
+  "Campania 1 - U06": 1,
+  "Campania 1 - U07": 1,
+  "Campania 2 - U01": 1,
+  "Campania 2 - U02": 1,
+  "Campania 2 - U03": 1,
+  "Campania 2 - U04": 1,
+  "Campania 2 - U05": 1,
+  "Campania 2 - U06": 1,
+  "Campania 2 - U07": 1,
+  "Emilia-Romagna - U01": 1,
+  "Emilia-Romagna - U02": 1,
+  "Emilia-Romagna - U03": 1,
+  "Emilia-Romagna - U04": 1,
+  "Emilia-Romagna - U05": 1,
+  "Emilia-Romagna - U06": 1,
+  "Emilia-Romagna - U07": 1,
+  "Emilia-Romagna - U08": 1,
+  "Emilia-Romagna - U09": 1,
+  "Emilia-Romagna - U10": 1,
+  "Emilia-Romagna - U11": 1,
+  "Friuli-Venezia Giulia - U01": 1,
+  "Friuli-Venezia Giulia - U02": 1,
+  "Friuli-Venezia Giulia - U03": 1,
+  "Lazio 1 - U01": 1,
+  "Lazio 1 - U02": 1,
+  "Lazio 1 - U03": 1,
+  "Lazio 1 - U04": 1,
+  "Lazio 1 - U05": 1,
+  "Lazio 1 - U06": 1,
+  "Lazio 1 - U07": 1,
+  "Lazio 1 - U08": 1,
+  "Lazio 1 - U09": 1,
+  "Lazio 2 - U01": 1,
+  "Lazio 2 - U02": 1,
+  "Lazio 2 - U03": 1,
+  "Lazio 2 - U04": 1,
+  "Lazio 2 - U05": 1,
+  "Liguria - U01": 1,
+  "Liguria - U02": 1,
+  "Liguria - U03": 1,
+  "Liguria - U04": 1,
+  "Lombardia 1 - U01": 1,
+  "Lombardia 1 - U02": 1,
+  "Lombardia 1 - U03": 1,
+  "Lombardia 1 - U04": 1,
+  "Lombardia 1 - U05": 1,
+  "Lombardia 1 - U06": 1,
+  "Lombardia 1 - U07": 1,
+  "Lombardia 1 - U08": 1,
+  "Lombardia 1 - U09": 1,
+  "Lombardia 2 - U01": 1,
+  "Lombardia 2 - U02": 1,
+  "Lombardia 2 - U03": 1,
+  "Lombardia 2 - U04": 1,
+  "Lombardia 2 - U05": 1,
+  "Lombardia 3 - U01": 1,
+  "Lombardia 3 - U02": 1,
+  "Lombardia 3 - U03": 1,
+  "Lombardia 3 - U04": 1,
+  "Lombardia 3 - U05": 1,
+  "Lombardia 4 - U01": 1,
+  "Lombardia 4 - U02": 1,
+  "Lombardia 4 - U03": 1,
+  "Lombardia 4 - U04": 1,
+  "Marche - U01": 1,
+  "Marche - U02": 1,
+  "Marche - U03": 1,
+  "Marche - U04": 1,
+  "Molise - U01": 1,
+  "Piemonte 1 - U01": 1,
+  "Piemonte 1 - U02": 1,
+  "Piemonte 1 - U03": 1,
+  "Piemonte 1 - U04": 1,
+  "Piemonte 1 - U05": 1,
+  "Piemonte 2 - U01": 1,
+  "Piemonte 2 - U02": 1,
+  "Piemonte 2 - U03": 1,
+  "Piemonte 2 - U04": 1,
+  "Piemonte 2 - U05": 1,
+  "Puglia - U01": 1,
+  "Puglia - U02": 1,
+  "Puglia - U03": 1,
+  "Puglia - U04": 1,
+  "Puglia - U05": 1,
+  "Puglia - U06": 1,
+  "Puglia - U07": 1,
+  "Puglia - U08": 1,
+  "Puglia - U09": 1,
+  "Puglia - U10": 1,
+  "Sardegna - U01": 1,
+  "Sardegna - U02": 1,
+  "Sardegna - U03": 1,
+  "Sardegna - U04": 1,
+  "Sicilia 1 - U01": 1,
+  "Sicilia 1 - U02": 1,
+  "Sicilia 1 - U03": 1,
+  "Sicilia 1 - U04": 1,
+  "Sicilia 1 - U05": 1,
+  "Sicilia 1 - U06": 1,
+  "Sicilia 2 - U01": 1,
+  "Sicilia 2 - U02": 1,
+  "Sicilia 2 - U03": 1,
+  "Sicilia 2 - U04": 1,
+  "Sicilia 2 - U05": 1,
+  "Sicilia 2 - U06": 1,
+  "Toscana - U01": 1,
+  "Toscana - U02": 1,
+  "Toscana - U03": 1,
+  "Toscana - U04": 1,
+  "Toscana - U05": 1,
+  "Toscana - U06": 1,
+  "Toscana - U07": 1,
+  "Toscana - U08": 1,
+  "Toscana - U09": 1,
+  "Trentino-Alto Adige - U01": 1,
+  "Trentino-Alto Adige - U02": 1,
+  "Trentino-Alto Adige - U03": 1,
+  "Trentino-Alto Adige - U04": 1,
+  "Umbria - U01": 1,
+  "Umbria - U02": 1,
+  "Veneto 1 - U01": 1,
+  "Veneto 1 - U02": 1,
+  "Veneto 1 - U03": 1,
+  "Veneto 1 - U04": 1,
+  "Veneto 1 - U05": 1,
+  "Veneto 2 - U01": 1,
+  "Veneto 2 - U02": 1,
+  "Veneto 2 - U03": 1,
+  "Veneto 2 - U04": 1,
+  "Veneto 2 - U05": 1,
+  "Veneto 2 - U06": 1,
+  "Veneto 2 - U07": 1,
+  "AT LARGE": 250
+};
+
+
+/* ---- Party setup ---- */
+const PARTIES = ["FdI", "Lega", "Forza", "NM", "CDX", "PD", "M5S", "AVS", "IV", "+E", "CSX", "Azione", "OTH"];
+const PARTY_COLORS = {"FdI":"#03386A","Lega":"#008000","Forza":"#0087DC","NM":"#2149A7","CDX":"#0000FF","PD":"#EF1C27","M5S":"#FFD700","AVS":"#CC0066","IV":"#FF66CC","+E":"#FF6600","CSX":"#FF0000","Azione":"#0039AA","OTH":"#DADADA"};
+const GE2024 = {"FdI":26.0,"Lega":8.8,"Forza":8.1,"NM":0.9,"CDX":43.8,"PD":19.1,"M5S":15.4,"AVS":3.6,"IV":0.0,"+E":2.8,"CSX":41.5,"Azione":0.0,"OTH":6.9};
+const DEFAULTS = {"FdI":31.0,"Lega":8.5,"Forza":8.5,"NM":1.0,"CDX":49.0,"PD":22.0,"M5S":13.0,"AVS":7.0,"IV":2.0,"+E":2.0,"CSX":46.0,"Azione":3.0,"OTH":3.0};
+const PREV_2023 = {"FdI":119,"Lega":66,"Forza":45,"NM":7,"CDX":237,"PD":69,"M5S":52,"AVS":12,"IV":9,"+E":2,"CSX":136,"Azione":12,"OTH":6};
+
+const parties = PARTIES.map(name => ({
+  name,
+  color: PARTY_COLORS[name] || "#999",
+  ge2024: GE2024[name],
+  votes: DEFAULTS[name],
+  final: 0
+}));
+
+  // --- UNIVERSAL INPUT BEHAVIOUR FOR ALL CALCULATORS ---
+function attachInputBehaviour(calculate, updateVoteTotal) {
+  const inputs = document.querySelectorAll('.input-wrapper input');
+
+  inputs.forEach((input, index) => {
+    let originalValue = input.value;
+    let hasChanged = false;
+
+    // When user focuses: store old value, clear visually (but keep logical value)
+    input.addEventListener('focus', () => {
+      originalValue = input.value;
+      input.value = ''; // visually empty
+      hasChanged = false;
+    });
+
+    // When user types: mark changed and update totals
+    input.addEventListener('input', () => {
+      hasChanged = true;
+      updateVoteTotal();
+      const calcBtn = document.getElementById('calculate');
+      if (calcBtn) calcBtn.style.background = '#ffa500'; // optional UI cue
+    });
+
+    // When user leaves field
+    input.addEventListener('blur', () => {
+      // restore old if blank or invalid
+      if (input.value === '' || isNaN(parseFloat(input.value))) {
+        input.value = originalValue;
+      } else {
+        input.value = parseFloat(input.value).toFixed(1); // format to one decimal
+      }
+
+      // only recalc if changed
+      if (hasChanged && parseFloat(input.value) !== parseFloat(originalValue)) {
+        calculate();
+      }
+    });
+
+  // When user presses Enter or Tab → move to next *enabled* input
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' || e.key === 'Tab') {
+    e.preventDefault();
+
+    if (input.value === '' || isNaN(parseFloat(input.value))) {
+      input.value = originalValue;
+    } else {
+      input.value = parseFloat(input.value).toFixed(1);
+    }
+
+    // Find the next interactable input (skip disabled ones)
+    let nextIndex = (index + 1) % inputs.length;
+    while (inputs[nextIndex].disabled) {
+      nextIndex = (nextIndex + 1) % inputs.length;
+      if (nextIndex === index) break; // safety guard
+    }
+
+    inputs[nextIndex].focus();
+  }
+});
+  });
+}
+
+/* ---- Render table ---- */
+function renderTable(){
+  const tbody=document.getElementById('tbody');
+  tbody.innerHTML=parties.map((p,i)=>`
+  <tr class="party-row ${p.name}">
+    <td class="party-column" style="--party-color:${p.color}">${p.name}</td>
+<td class="ge2024-column">
+  ${
+    p.name === "IV" || p.name === "Azione"
+      ? "N/A"
+      : p.name === "CSX"
+      ? "*41.5%"
+      : `${p.ge2024.toFixed(1)}%`
+  }
+</td>
+         <td>
+      <div class="input-wrapper">
+        ${
+          (p.name === "CDX" || p.name === "CSX" || p.name === "OTH")
+            ? `<input type="number" id="votes-${i}" value="${p.votes.toFixed(1)}" disabled class="disabled-input">`
+            : `<input type="number" id="votes-${i}" value="${p.votes.toFixed(1)}" min="0" max="100" step="0.1">`
+        }
+        <span class="percent-sign">%</span>
+      </div>
+    </td>
+      <td class="seats-column" id="seats-${i}">—</td>
+      <td class="diff-column" id="diff-${i}">—</td>
+    </tr>`).join('');
+
+  attachInputBehaviour(calculate, updateVoteTotal);
+  updateVoteTotal();
+}
+
+function updateVoteTotal() {
+  const getVal = (party) =>
+    parseFloat(document.querySelector(`#votes-${PARTIES.indexOf(party)}`)?.value) || 0;
+
+  // --- coalition sums ---
+  const CDX_sum = getVal("FdI") + getVal("Lega") + getVal("Forza") + getVal("NM");
+  const CSX_sum = getVal("PD") + getVal("M5S") + getVal("AVS") + getVal("IV") + getVal("+E");
+  const AZIONE_val = getVal("Azione");
+  const OTH_sum = 100 - (CDX_sum + CSX_sum + AZIONE_val);
+
+  // --- update disabled inputs ---
+  const CDX_input = document.querySelector(`#votes-${PARTIES.indexOf("CDX")}`);
+  const CSX_input = document.querySelector(`#votes-${PARTIES.indexOf("CSX")}`);
+  const OTH_input = document.querySelector(`#votes-${PARTIES.indexOf("OTH")}`);
+  if (CDX_input) CDX_input.value = CDX_sum.toFixed(1);
+  if (CSX_input) CSX_input.value = CSX_sum.toFixed(1);
+  if (OTH_input) OTH_input.value = OTH_sum.toFixed(1);
+
+  // --- total sum (should always be CDX + CSX + Azione + OTH) ---
+  const total = CDX_sum + CSX_sum + AZIONE_val + OTH_sum;
+  document.getElementById("total-votes").textContent = total.toFixed(1) + "%";
+}
+
+/* ---- Proportional swing ---- */
+function computeConstituencyShares(){
+  const target={};
+  PARTIES.forEach((n,i)=>target[n]=(parseFloat(document.getElementById(`votes-${i}`).value)||0)/100);
+  const base=BASELINE.baseline_national;const eps=1e-9;
+  return BASELINE.constituencies.map(row=>{
+    const out={name:row.name};let sum=0;
+    PARTIES.forEach(p=>{
+      const baseNat=base[p]??0;
+      const targetNat=target[p]??baseNat;
+      const ratio=(baseNat>eps)?(targetNat/baseNat):(targetNat>0?(targetNat/eps):0);
+      const val=(row[p]??0)*ratio;
+      out[p]=val;sum+=val;
+    });
+    if(sum>0)PARTIES.forEach(p=>out[p]=out[p]/sum);
+    return out;
+  });
+}
+
+/* ---- Sainte-Laguë (Divisor Method) ---- */
+function dhondtSeats(votes, seats = 6, nationalVotes, validParties) {
+  const alloc = Object.fromEntries(validParties.map(p => [p, 0]));
+  
+  for (let s = 0; s < seats; s++) {
+    const quotients = validParties.map(p => {
+      const divisor = 2 * alloc[p] + 1; // 1, 3, 5, 7, ...
+      return { p, q: (votes[p] || 0) / divisor };
+    });
+
+    let best = quotients[0];
+    for (let i = 1; i < quotients.length; i++) {
+      const x = quotients[i];
+      if (
+        x.q > best.q ||
+        (Math.abs(x.q - best.q) < 1e-12 && (nationalVotes[x.p] || 0) > (nationalVotes[best.p] || 0))
+      ) {
+        best = x;
+      }
+    }
+    alloc[best.p] += 1;
+  }
+  return alloc;
+}
+
+  /* ---- Manual weighting factors for coalition seat distribution ---- */
+const CDX_WEIGHTS = { "FdI": 0.6, "Lega": 1.4, "Forza": 1.0, "NM": 1.0 };
+const CSX_WEIGHTS = { "PD": 1.0, "M5S": 1.0, "AVS": 1.0, "IV": 1.0, "+E": 1.0 };
+
+  /* ---- Redistribute coalition seats to component parties ---- */
+function redistributeCoalitionSeats(totals, nationalVotes) {
+  const redistribute = (coalition, members) => {
+    const coalitionSeats = totals[coalition] || 0;
+const weights = coalition === "CDX" ? CDX_WEIGHTS : CSX_WEIGHTS;
+const sumVotes = members.reduce(
+  (a, p) => a + (nationalVotes[p] || 0) * (weights[p] || 1),
+  0
+);
+    if (coalitionSeats > 0 && sumVotes > 0) {
+      // distribute proportionally based on each party’s share within the coalition
+      let distributed = 0;
+      const temp = {};
+      members.forEach(p => {
+temp[p] = Math.round(coalitionSeats * ((nationalVotes[p] || 0) * (weights[p] || 1)) / sumVotes);
+        distributed += temp[p];
+      });
+      // adjust rounding error if any
+      const diff = coalitionSeats - distributed;
+      if (diff !== 0) {
+        const sorted = members
+          .slice()
+          .sort((a, b) => (nationalVotes[b] || 0) - (nationalVotes[a] || 0));
+        for (let i = 0; i < Math.abs(diff); i++) {
+          const target = sorted[i % sorted.length];
+          temp[target] += diff > 0 ? 1 : -1;
+        }
+      }
+      members.forEach(p => totals[p] = (totals[p] || 0) + temp[p]);
+      totals[coalition] = 0; // coalition no longer holds seats directly
+    }
+  };
+
+  redistribute("CDX", ["FdI", "Lega", "Forza", "NM"]);
+  redistribute("CSX", ["PD", "M5S", "AVS", "IV", "+E"]);
+}
+
+/* ---- Calculate ---- */
+function calculate(){
+  const nationalVotes={};
+  parties.forEach((p,i)=>{
+    p.votes=parseFloat(document.getElementById(`votes-${i}`).value)||0;
+    nationalVotes[p.name]=p.votes;
+  });
+
+  const perConst=computeConstituencyShares();
+  const totals=Object.fromEntries(PARTIES.map(p=>[p,0]));
+
+perConst.forEach(row => {
+  const sVotes = row; // local votes in this constituency
+
+  // 👇 Calculate total valid vote sum in this constituency
+  let totalVotes = 0;
+  PARTIES.forEach(p => totalVotes += sVotes[p] || 0);
+
+  // 👇 Apply a constituency-level threshold (e.g. 3% of local valid votes)
+const EPS = 1e-9;
+const validParties = PARTIES.filter(p => (sVotes[p] || 0) + EPS >= 0.03 * totalVotes);
+
+  // 👇 Allocate seats only among those parties
+  const s = dhondtSeats(sVotes, CONSTITUENCY_SEATS[row.name] || 6, nationalVotes, validParties);
+
+PARTIES.forEach(p => {
+  if (p !== "OTH") totals[p] += (s[p] || 0);
+});
+
+});
+
+// --- redistribute coalition seats ---
+redistributeCoalitionSeats(totals, nationalVotes);
+
+// --- display normal party seat results ---
+PARTIES.forEach((n,i)=>{
+  const seats = totals[n];
+  document.getElementById(`seats-${i}`).textContent = seats;
+  parties[i].final = seats;
+
+  const diff = seats - (PREV_2023[n] || 0);
+  const diffCell = document.getElementById(`diff-${i}`);
+  if (diff > 0) {
+    diffCell.textContent = `+${diff}`;
+    diffCell.className = 'diff-column positive';
+  } else if (diff < 0) {
+    diffCell.textContent = `${diff}`;
+    diffCell.className = 'diff-column negative';
+  } else {
+    diffCell.textContent = '(=)';
+    diffCell.className = 'diff-column equal';
+  }
+});
+
+// --- coalition seat sums (CDX and CSX) ---
+const CDX_total = (totals["FdI"] || 0) + (totals["Lega"] || 0) + (totals["Forza"] || 0) + (totals["NM"] || 0);
+const CSX_total = (totals["PD"] || 0) + (totals["M5S"] || 0) + (totals["AVS"] || 0) + (totals["IV"] || 0) + (totals["+E"] || 0);
+
+const CDX_index = PARTIES.indexOf("CDX");
+const CSX_index = PARTIES.indexOf("CSX");
+if (CDX_index !== -1) document.getElementById(`seats-${CDX_index}`).textContent = CDX_total;
+if (CSX_index !== -1) document.getElementById(`seats-${CSX_index}`).textContent = CSX_total;
+
+// --- NOW calculate OTH as remainder (final position) ---
+const TOTAL_SEATS = 400;
+const cdxSeats = CDX_total;
+const csxSeats = CSX_total;
+const azioneSeats = totals["Azione"] || 0;
+totals["OTH"] = Math.max(0, TOTAL_SEATS - (cdxSeats + csxSeats + azioneSeats));
+const OTH_index = PARTIES.indexOf("OTH");
+if (OTH_index !== -1) document.getElementById(`seats-${OTH_index}`).textContent = totals["OTH"];
+
+  // --- recalc diffs for CDX, CSX, and OTH after coalition sums ---
+["CDX", "CSX", "OTH"].forEach(party => {
+  const index = PARTIES.indexOf(party);
+  const seats = parseInt(document.getElementById(`seats-${index}`).textContent) || 0;
+  const diff = seats - (PREV_2023[party] || 0);
+  const diffCell = document.getElementById(`diff-${index}`);
+  if (diff > 0) {
+    diffCell.textContent = `+${diff}`;
+    diffCell.className = "diff-column positive";
+  } else if (diff < 0) {
+    diffCell.textContent = `${diff}`;
+    diffCell.className = "diff-column negative";
+  } else {
+    diffCell.textContent = "(=)";
+    diffCell.className = "diff-column equal";
+  }
+});
+
+document.getElementById('total-seats').textContent = Object.values(totals).reduce((a, b) => a + b, 0);
+document.getElementById('calculate').style.background = '#008500';
+updateCoalitionFromTotals(totals);
+}
+
+/* ---- Reset ---- */
+document.getElementById('reset').addEventListener('click', ()=>{
+  parties.forEach((p,i)=>{
+    const input = document.getElementById(`votes-${i}`);
+    input.value = DEFAULTS[p.name].toFixed(1);
+  });
+  updateVoteTotal();  // refresh footer totals immediately
+  calculate();         // recalc seats + coalition builder
+});
+document.getElementById('calculate').addEventListener('click',calculate);
+renderTable();
+document.addEventListener('DOMContentLoaded',()=>calculate());
+
+/* ---- Coalition Builder ---- */
+const COAL_TOTAL=400,COAL_MAJ=201;
+let selected=[];
+const legend=document.getElementById("legend"),overlay=document.getElementById("coalition-overlay"),counter=document.getElementById("counter");
+
+function toggleParty(n){
+  if(selected.includes(n))selected=selected.filter(x=>x!==n);
+  else selected.push(n);
+  renderCoalition(lastTotalsCache);
+}
+
+let lastTotalsCache=null;
+function updateCoalitionFromTotals(t){lastTotalsCache=t;renderCoalition(t);}
+
+function renderCoalition(t){
+  if(!t)return;
+overlay.innerHTML = "";
+legend.innerHTML = "";
+
+// 🟢 Only show parties that currently have seats
+const validParties = PARTIES.filter(
+  n => (t[n] || 0) > 0 && n !== "CDX" && n !== "CSX"
+);
+
+// ❌ Do NOT clear "selected" — this allows zero-seat parties to stay selected
+// selected = selected.filter(n => validParties.includes(n));
+
+validParties.forEach(n => {
+  const s = t[n] || 0;
+  const item = document.createElement('div');
+  item.className = 'legend-item' + (selected.includes(n) ? ' active' : '');
+  item.innerHTML = `<div class="legend-box" style="background:${PARTY_COLORS[n] || '#999'}"></div> <strong>${n}</strong> ${s}`;
+  item.onclick = () => toggleParty(n);
+  legend.appendChild(item);
+});
+
+  const totalSel=selected.reduce((s,n)=>s+(t[n]||0),0);
+  const width=(totalSel/COAL_TOTAL)*100;
+  overlay.style.width="0%";
+  overlay.innerHTML="";
+  if(totalSel>0){
+    selected.forEach(n=>{
+      const s=t[n]||0;
+      const seg=document.createElement('div');
+      seg.className='segment';
+      seg.style.flexBasis=((s/totalSel)*100)+'%';
+      seg.style.background=PARTY_COLORS[n]||"#999";
+      overlay.appendChild(seg);
+    });
+  }
+  requestAnimationFrame(()=>overlay.style.width=width+"%");
+  counter.textContent=`${totalSel} / ${COAL_TOTAL}`;
+  counter.style.color=totalSel>=COAL_MAJ?"#2BA84A":"#000";
+  document.querySelectorAll(".legend-item").forEach(el=>{
+    const n=el.querySelector("strong").textContent;
+    el.classList.toggle("active",selected.includes(n));
+  });
+}
+/* ---- Tab Switching (fixed state handling) ---- */
+const tabResult = document.getElementById("tab-result");
+const tab2023 = document.getElementById("tab-2023");
+let is2023View = false;
+let lastUserTotals = null; // store the most recent calculated result
+
+// --- patch: remember user totals whenever calculator runs ---
+const originalUpdateCoalitionFromTotals = updateCoalitionFromTotals;
+updateCoalitionFromTotals = function(t) {
+  if (!is2023View) lastUserTotals = t; // only store when user-generated
+  originalUpdateCoalitionFromTotals(t);
+};
+
+tabResult.addEventListener("click", () => {
+  if (!tabResult.classList.contains("active")) {
+    tabResult.classList.add("active");
+    tab2023.classList.remove("active");
+    is2023View = false;
+    document.getElementById("tab-pill").style.transform = "translateX(0%)";
+    updateCoalitionFromTotals(lastUserTotals || lastTotalsCache);
+  }
+});
+
+tab2023.addEventListener("click", () => {
+  if (!tab2023.classList.contains("active")) {
+    tab2023.classList.add("active");
+    tabResult.classList.remove("active");
+    is2023View = true;
+    document.getElementById("tab-pill").style.transform = "translateX(100%)";
+    originalUpdateCoalitionFromTotals(PREV_2023);
+  }
+});
+
+
+
+</script>
+</body>
+</html>
