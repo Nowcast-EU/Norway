@@ -563,80 +563,70 @@ function modifiedSainteLague(votes, seats, nationalVotes, validParties) {
 }
 
 /* ---- Calculate ---- */
-function calculate(){
+function calculate() {
   const nationalVotes = {};
 
-  // Load user input
-  parties.forEach((p,i)=>{
+  // ---- Load user input ----
+  parties.forEach((p, i) => {
     p.votes = parseFloat(document.getElementById(`votes-${i}`).value) || 0;
-    nationalVotes[p.name] = p.votes;  // %= national vote share
+    nationalVotes[p.name] = p.votes;  // % of national vote
   });
 
-  // ---- Step 1: Generate constituency swing-adjusted shares ----
+  // ---- Generate swing-adjusted constituency shares ----
   const perConst = computeConstituencyShares();
-const REAL_PARTIES = PARTIES.filter(
-  p => !["Left", "Right", "OTH"].includes(p)
-);
 
-const totals = Object.fromEntries(REAL_PARTIES.map(p => [p, 0]));
+  // REAL parties = those that can receive seats
+  const REAL_PARTIES = PARTIES.filter(
+    p => !["Left", "Right", "OTH"].includes(p)
+  );
 
-  // ---- Step 2: Allocate constituency seats using Modified Sainte-Laguë ----
+  // ---- Initialise seat totals (only real parties) ----
+  const totals = Object.fromEntries(REAL_PARTIES.map(p => [p, 0]));
+
+  // ---- STEP 2: Constituency seats = 150 seats using Modified Sainte-Laguë ----
   perConst.forEach(row => {
     const sVotes = row;
 
-// Norway has *no* constituency threshold
-const validParties = PARTIES.filter(
-  p => !["OTH", "Left", "Right"].includes(p)
-);
+    // ❗ Norway has NO constituency threshold → all real parties participate
+    const validParties = REAL_PARTIES;
 
-    // Modified Sainte-Laguë
-    const s = modifiedSainteLague(
+    // Allocate seats for this constituency
+    const allocated = modifiedSainteLague(
       sVotes,
-      CONSTITUENCY_SEATS[row.name] || 6,
+      CONSTITUENCY_SEATS[row.name],
       nationalVotes,
       validParties
     );
 
-    // Add constituency seats
-REAL_PARTIES.forEach(p => {
-  if (!["OTH", "Left", "Right"].includes(p)) {
-    totals[p] += (s[p] || 0);
-  }
-});
+    // Add to national totals
+    REAL_PARTIES.forEach(p => {
+      totals[p] += (allocated[p] || 0);
+    });
   });
 
-  // ---- Step 3: National threshold (4%) ----
+  // ---- STEP 3: National threshold for leveling seats (4%) ----
   const NATIONAL_THRESHOLD = 0.04;
-const eligible = REAL_PARTIES.filter(
-  p =>
-    !["Left", "Right", "OTH"].includes(p) &&
-    (nationalVotes[p] / 100) >= NATIONAL_THRESHOLD
-);
+  const eligible = REAL_PARTIES.filter(
+    p => (nationalVotes[p] / 100) >= NATIONAL_THRESHOLD
+  );
 
-  // ---- Step 4: National leveling seats (19 seats total) ----
-  function allocateLevelingSeats(totalConstituency, nationalVotes){
-const eligible = PARTIES.filter(
-  p =>
-    !["Left", "Right", "OTH"].includes(p) &&
-    (nationalVotes[p] / 100) >= NATIONAL_THRESHOLD
-);
-
+  // ---- STEP 4: Allocate 19 leveling seats ----
+  function allocateLevelingSeats(totalConstituency, nationalVotes) {
     const ideal = Object.fromEntries(eligible.map(p => [p, 0]));
-
     const totalSeats = 169;
 
-    // National ideal seats via modified Sainte-Laguë
-    for (let s = 0; s < totalSeats; s++){
+    // National ideal allocation
+    for (let s = 0; s < totalSeats; s++) {
       const quotients = eligible.map(p => {
         const divisor = ideal[p] === 0 ? 1.4 : (2 * ideal[p] + 1);
         return { p, q: (nationalVotes[p] / 100) / divisor };
       });
 
-      let best = quotients.reduce((a,b) => (b.q > a.q ? b : a));
+      const best = quotients.reduce((a, b) => (b.q > a.q ? b : a));
       ideal[best.p] += 1;
     }
 
-    // Leveling = ideal - constituency
+    // leveling = ideal – constituency seats
     const leveling = {};
     eligible.forEach(p => {
       leveling[p] = Math.max(0, ideal[p] - totalConstituency[p]);
@@ -645,25 +635,26 @@ const eligible = PARTIES.filter(
     return leveling;
   }
 
-  // Apply leveling seats
   const leveling = allocateLevelingSeats(totals, nationalVotes);
-  Object.keys(leveling).forEach(p => {
-  if (!["OTH", "Left", "Right"].includes(p)) totals[p] += leveling[p];
-});
 
-  // ---- Step 5: Update display seats for normal parties ----
-  REAL_PARTIES.forEach((n,i)=>{
-    const seats = totals[n];
+  // Apply leveling seats
+  eligible.forEach(p => {
+    totals[p] += leveling[p];
+  });
+
+  // ---- STEP 5: Update seats and +/- output ----
+  REAL_PARTIES.forEach((p, i) => {
+    const seats = totals[p];
     document.getElementById(`seats-${i}`).textContent = seats;
     parties[i].final = seats;
 
-    const diff = seats - (PREV_2023[n] || 0);
+    const diff = seats - (PREV_2023[p] || 0);
     const diffCell = document.getElementById(`diff-${i}`);
 
-    if (diff > 0){
+    if (diff > 0) {
       diffCell.textContent = `+${diff}`;
       diffCell.className = "diff-column positive";
-    } else if (diff < 0){
+    } else if (diff < 0) {
       diffCell.textContent = `${diff}`;
       diffCell.className = "diff-column negative";
     } else {
@@ -672,24 +663,34 @@ const eligible = PARTIES.filter(
     }
   });
 
-  // ---- Step 6: Coalition sums (Left / Right rows only for visual guide) ----
-  const CDX_total = (totals["Ap"]||0)+(totals["SV"]||0)+(totals["Sp"]||0)+(totals["Rødt"]||0)+(totals["MDG"]||0);
-  const CSX_total = (totals["FrP"]||0)+(totals["Høyre"]||0)+(totals["KrF"]||0)+(totals["V"]||0);
+  // ---- STEP 6: Coalition sums for Left/Right visual rows ----
+  const CDX_total =
+    (totals["Ap"] || 0) +
+    (totals["SV"] || 0) +
+    (totals["Sp"] || 0) +
+    (totals["Rødt"] || 0) +
+    (totals["MDG"] || 0);
+
+  const CSX_total =
+    (totals["FrP"] || 0) +
+    (totals["Høyre"] || 0) +
+    (totals["KrF"] || 0) +
+    (totals["V"] || 0);
 
   const CDX_index = PARTIES.indexOf("Left");
   const CSX_index = PARTIES.indexOf("Right");
 
-  if (CDX_index !== -1) document.getElementById(`seats-${CDX_index}`).textContent = CDX_total;
-  if (CSX_index !== -1) document.getElementById(`seats-${CSX_index}`).textContent = CSX_total;
+  if (CDX_index !== -1)
+    document.getElementById(`seats-${CDX_index}`).textContent = CDX_total;
+  if (CSX_index !== -1)
+    document.getElementById(`seats-${CSX_index}`).textContent = CSX_total;
 
-  // ---- Step 7: Total
+  // ---- STEP 7: National total = must be exactly 169 ----
   document.getElementById("total-seats").textContent =
- PARTIES
-  .filter(p => !["Left", "Right", "OTH"].includes(p))
-  .reduce((sum, p) => sum + (totals[p] || 0), 0);
+    REAL_PARTIES.reduce((sum, p) => sum + (totals[p] || 0), 0);
 
-  // Reset calculate button color
-  document.getElementById('calculate').style.background = '#008500';
+  // Reset calculate button
+  document.getElementById("calculate").style.background = "#008500";
 
   // Update coalition builder
   updateCoalitionFromTotals(totals);
