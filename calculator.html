@@ -574,7 +574,11 @@ perConst.forEach(row => {
 const validParties = PARTIES;
 
 // 👇 Allocate seats among all parties
-const s = sainteLagueSeats(sVotes, CONSTITUENCY_SEATS[row.name] || 6, nationalVotes, validParties);
+const s = sainteLagueSeats(
+  sVotes,
+  CONSTITUENCY_SEATS[row.name] || 6,
+  validParties
+);
 
   PARTIES.forEach(p => totals[p] += (s[p] || 0));
 });
