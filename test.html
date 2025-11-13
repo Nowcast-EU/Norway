@@ -688,24 +688,6 @@ document.getElementById('total-seats').textContent =
   Object.values(totals).reduce((a,b)=>a+b,0);
 
   document.getElementById('calculate').style.background='#008500';
-
-    // Build constituency-level seat map for levelling seat allocation
-  const constituencyResults = {};
-  perConst.forEach(row => {
-    constituencyResults[row.name] = {};
-    const sVotes = row;
-    const s = sainteLagueSeats(sVotes, CONSTITUENCY_SEATS[row.name], PARTIES);
-    PARTIES.forEach(p => constituencyResults[row.name][p] = s[p] || 0);
-  });
-
-  // Levelling seats
-  const topups = allocateLevellingSeats(nationalVotes, constituencyResults, CONSTITUENCY_SEATS);
-
-  // Add levelling seats to totals
-  PARTIES.forEach(p => {
-    totals[p] += topups[p] || 0;
-  });
-
   updateCoalitionFromTotals(totals);
 }
 
