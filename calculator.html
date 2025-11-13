@@ -598,9 +598,11 @@ function calculate(){
     );
 
     // Add constituency seats
-    PARTIES.forEach(p => {
-      if (p !== "OTH") totals[p] += (s[p] || 0);
-    });
+PARTIES.forEach(p => {
+  if (!["OTH", "Left", "Right"].includes(p)) {
+    totals[p] += (s[p] || 0);
+  }
+});
   });
 
   // ---- Step 3: National threshold (4%) ----
@@ -646,7 +648,7 @@ const eligible = PARTIES.filter(
   // Apply leveling seats
   const leveling = allocateLevelingSeats(totals, nationalVotes);
   Object.keys(leveling).forEach(p => {
-  if (p !== "OTH") totals[p] += leveling[p];
+  if (!["OTH", "Left", "Right"].includes(p)) totals[p] += leveling[p];
 });
 
   // ---- Step 5: Update display seats for normal parties ----
@@ -682,7 +684,9 @@ const eligible = PARTIES.filter(
 
   // ---- Step 7: Total
   document.getElementById("total-seats").textContent =
-    Object.values(totals).reduce((a,b)=>a+b,0);
+ PARTIES
+  .filter(p => !["Left", "Right", "OTH"].includes(p))
+  .reduce((sum, p) => sum + (totals[p] || 0), 0);
 
   // Reset calculate button color
   document.getElementById('calculate').style.background = '#008500';
