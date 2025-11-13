@@ -574,7 +574,11 @@ function calculate(){
 
   // ---- Step 1: Generate constituency swing-adjusted shares ----
   const perConst = computeConstituencyShares();
-  const totals = Object.fromEntries(PARTIES.map(p => [p, 0]));
+const REAL_PARTIES = PARTIES.filter(
+  p => !["Left", "Right", "OTH"].includes(p)
+);
+
+const totals = Object.fromEntries(REAL_PARTIES.map(p => [p, 0]));
 
   // ---- Step 2: Allocate constituency seats using Modified Sainte-Laguë ----
   perConst.forEach(row => {
@@ -600,7 +604,7 @@ function calculate(){
     );
 
     // Add constituency seats
-PARTIES.forEach(p => {
+REAL_PARTIES.forEach(p => {
   if (!["OTH", "Left", "Right"].includes(p)) {
     totals[p] += (s[p] || 0);
   }
@@ -609,7 +613,7 @@ PARTIES.forEach(p => {
 
   // ---- Step 3: National threshold (4%) ----
   const NATIONAL_THRESHOLD = 0.04;
-const eligible = PARTIES.filter(
+const eligible = REAL_PARTIES.filter(
   p =>
     !["Left", "Right", "OTH"].includes(p) &&
     (nationalVotes[p] / 100) >= NATIONAL_THRESHOLD
@@ -623,7 +627,7 @@ const eligible = PARTIES.filter(
     (nationalVotes[p] / 100) >= NATIONAL_THRESHOLD
 );
 
-    const ideal = Object.fromEntries(PARTIES.map(p => [p, 0]));
+    const ideal = Object.fromEntries(eligible.map(p => [p, 0]));
 
     const totalSeats = 169;
 
@@ -654,7 +658,7 @@ const eligible = PARTIES.filter(
 });
 
   // ---- Step 5: Update display seats for normal parties ----
-  PARTIES.forEach((n,i)=>{
+  REAL_PARTIES.forEach((n,i)=>{
     const seats = totals[n];
     document.getElementById(`seats-${i}`).textContent = seats;
     parties[i].final = seats;
