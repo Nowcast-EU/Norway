@@ -564,128 +564,127 @@ function modifiedSainteLague(votes, seats, nationalVotes, validParties) {
 
 /* ---- Calculate ---- */
 function calculate(){
-  const nationalVotes={};
+  const nationalVotes = {};
+
+  // Load user input
   parties.forEach((p,i)=>{
-    p.votes=parseFloat(document.getElementById(`votes-${i}`).value)||0;
-    nationalVotes[p.name]=p.votes;
+    p.votes = parseFloat(document.getElementById(`votes-${i}`).value) || 0;
+    nationalVotes[p.name] = p.votes;  // %= national vote share
   });
 
-  const perConst=computeConstituencyShares();
-  const totals=Object.fromEntries(PARTIES.map(p=>[p,0]));
+  // ---- Step 1: Generate constituency swing-adjusted shares ----
+  const perConst = computeConstituencyShares();
+  const totals = Object.fromEntries(PARTIES.map(p => [p, 0]));
 
-perConst.forEach(row => {
-  const sVotes = row; // local votes in this constituency
+  // ---- Step 2: Allocate constituency seats using Modified Sainte-Laguë ----
+  perConst.forEach(row => {
+    const sVotes = row;
 
-  // 👇 Calculate total valid vote sum in this constituency
-  let totalVotes = 0;
-  PARTIES.forEach(p => totalVotes += sVotes[p] || 0);
+    // Local constituency-level threshold (3%)
+    let totalVotes = 0;
+    PARTIES.forEach(p => totalVotes += sVotes[p] || 0);
 
-  // 👇 Apply a constituency-level threshold (e.g. 3% of local valid votes)
-const EPS = 1e-9;
-const validParties = PARTIES.filter(p => (sVotes[p] || 0) + EPS >= 0.03 * totalVotes);
+    const EPS = 1e-9;
+    const validParties = PARTIES.filter(
+      p => (sVotes[p] || 0) + EPS >= 0.03 * totalVotes
+    );
 
-  // 👇 Allocate seats only among those parties
-  const s = dhondtSeats(sVotes, CONSTITUENCY_SEATS[row.name] || 6, nationalVotes, validParties);
+    // Modified Sainte-Laguë
+    const s = modifiedSainteLague(
+      sVotes,
+      CONSTITUENCY_SEATS[row.name] || 6,
+      nationalVotes,
+      validParties
+    );
 
-PARTIES.forEach(p => {
-  if (p !== "OTH") totals[p] += (s[p] || 0);
-});
+    // Add constituency seats
+    PARTIES.forEach(p => {
+      if (p !== "OTH") totals[p] += (s[p] || 0);
+    });
+  });
 
-});
-
+  // ---- Step 3: National threshold (4%) ----
   const NATIONAL_THRESHOLD = 0.04;
-const thresholdEligible = PARTIES.filter(
-  p => (nationalVotes[p] / 100) >= NATIONAL_THRESHOLD
-);
+  const thresholdEligible = PARTIES.filter(
+    p => (nationalVotes[p] / 100) >= NATIONAL_THRESHOLD
+  );
 
-  function allocateLevelingSeats(totalConstituency, nationalVotes) {
+  // ---- Step 4: National leveling seats (19 seats total) ----
+  function allocateLevelingSeats(totalConstituency, nationalVotes){
     const eligible = PARTIES.filter(
       p => (nationalVotes[p] / 100) >= NATIONAL_THRESHOLD
     );
 
-    const totals = Object.fromEntries(PARTIES.map(p => [p,0]));
-    const ideal = Object.fromEntries(PARTIES.map(p => [p,0]));
+    const ideal = Object.fromEntries(PARTIES.map(p => [p, 0]));
 
-    // Ideal national seats using modified Sainte-Laguë
     const totalSeats = 169;
-    for (let s = 0; s < totalSeats; s++) {
-        const quotients = eligible.map(p => {
-            const divisor = ideal[p] === 0 ? 1.4 : (2 * ideal[p] + 1);
-            return { p, q: (nationalVotes[p] / 100) / divisor };
-        });
 
-        let best = quotients.reduce((a,b) => b.q > a.q ? b : a);
-        ideal[best.p] += 1;
+    // National ideal seats via modified Sainte-Laguë
+    for (let s = 0; s < totalSeats; s++){
+      const quotients = eligible.map(p => {
+        const divisor = ideal[p] === 0 ? 1.4 : (2 * ideal[p] + 1);
+        return { p, q: (nationalVotes[p] / 100) / divisor };
+      });
+
+      let best = quotients.reduce((a,b) => (b.q > a.q ? b : a));
+      ideal[best.p] += 1;
     }
 
-    // Leveling seats = ideal - constituency
+    // Leveling = ideal - constituency
     const leveling = {};
     eligible.forEach(p => {
-        leveling[p] = Math.max(0, ideal[p] - totalConstituency[p]);
+      leveling[p] = Math.max(0, ideal[p] - totalConstituency[p]);
     });
 
     return leveling;
-}
-
-// --- display normal party seat results ---
-PARTIES.forEach((n,i)=>{
-  const seats = totals[n];
-  document.getElementById(`seats-${i}`).textContent = seats;
-  parties[i].final = seats;
-
-  const diff = seats - (PREV_2023[n] || 0);
-  const diffCell = document.getElementById(`diff-${i}`);
-  if (diff > 0) {
-    diffCell.textContent = `+${diff}`;
-    diffCell.className = 'diff-column positive';
-  } else if (diff < 0) {
-    diffCell.textContent = `${diff}`;
-    diffCell.className = 'diff-column negative';
-  } else {
-    diffCell.textContent = '(=)';
-    diffCell.className = 'diff-column equal';
   }
-});
 
-// --- coalition seat sums (Left and Right) ---
-const CDX_total = (totals["Ap"] || 0) + (totals["SV"] || 0) + (totals["Sp"] || 0) + (totals["Rødt"] || 0) + (totals["MDG"] || 0);
-const CSX_total = (totals["FrP"] || 0) + (totals["Høyre"] || 0) + (totals["KrF"] || 0) + (totals["V"] || 0);
+  // Apply leveling seats
+  const leveling = allocateLevelingSeats(totals, nationalVotes);
+  Object.keys(leveling).forEach(p => {
+    totals[p] += leveling[p];
+  });
 
-const CDX_index = PARTIES.indexOf("Left");
-const CSX_index = PARTIES.indexOf("Right");
-if (CDX_index !== -1) document.getElementById(`seats-${CDX_index}`).textContent = CDX_total;
-if (CSX_index !== -1) document.getElementById(`seats-${CSX_index}`).textContent = CSX_total;
+  // ---- Step 5: Update display seats for normal parties ----
+  PARTIES.forEach((n,i)=>{
+    const seats = totals[n];
+    document.getElementById(`seats-${i}`).textContent = seats;
+    parties[i].final = seats;
 
-// --- NOW calculate OTH as remainder (final position) ---
-const TOTAL_SEATS = 169;
-const cdxSeats = CDX_total;
-const csxSeats = CSX_total;
-const azioneSeats = totals["Azione"] || 0;
-totals["OTH"] = Math.max(0, TOTAL_SEATS - (cdxSeats + csxSeats + azioneSeats));
-const OTH_index = PARTIES.indexOf("OTH");
-if (OTH_index !== -1) document.getElementById(`seats-${OTH_index}`).textContent = totals["OTH"];
+    const diff = seats - (PREV_2023[n] || 0);
+    const diffCell = document.getElementById(`diff-${i}`);
 
-  // --- recalc diffs for Left, Right, and OTH after coalition sums ---
-["Left", "Right", "OTH"].forEach(party => {
-  const index = PARTIES.indexOf(party);
-  const seats = parseInt(document.getElementById(`seats-${index}`).textContent) || 0;
-  const diff = seats - (PREV_2023[party] || 0);
-  const diffCell = document.getElementById(`diff-${index}`);
-  if (diff > 0) {
-    diffCell.textContent = `+${diff}`;
-    diffCell.className = "diff-column positive";
-  } else if (diff < 0) {
-    diffCell.textContent = `${diff}`;
-    diffCell.className = "diff-column negative";
-  } else {
-    diffCell.textContent = "(=)";
-    diffCell.className = "diff-column equal";
-  }
-});
+    if (diff > 0){
+      diffCell.textContent = `+${diff}`;
+      diffCell.className = "diff-column positive";
+    } else if (diff < 0){
+      diffCell.textContent = `${diff}`;
+      diffCell.className = "diff-column negative";
+    } else {
+      diffCell.textContent = "(=)";
+      diffCell.className = "diff-column equal";
+    }
+  });
 
-document.getElementById('total-seats').textContent = Object.values(totals).reduce((a, b) => a + b, 0);
-document.getElementById('calculate').style.background = '#008500';
-updateCoalitionFromTotals(totals);
+  // ---- Step 6: Coalition sums (Left / Right rows only for visual guide) ----
+  const CDX_total = (totals["Ap"]||0)+(totals["SV"]||0)+(totals["Sp"]||0)+(totals["Rødt"]||0)+(totals["MDG"]||0);
+  const CSX_total = (totals["FrP"]||0)+(totals["Høyre"]||0)+(totals["KrF"]||0)+(totals["V"]||0);
+
+  const CDX_index = PARTIES.indexOf("Left");
+  const CSX_index = PARTIES.indexOf("Right");
+
+  if (CDX_index !== -1) document.getElementById(`seats-${CDX_index}`).textContent = CDX_total;
+  if (CSX_index !== -1) document.getElementById(`seats-${CSX_index}`).textContent = CSX_total;
+
+  // ---- Step 7: Total
+  document.getElementById("total-seats").textContent =
+    Object.values(totals).reduce((a,b)=>a+b,0);
+
+  // Reset calculate button color
+  document.getElementById('calculate').style.background = '#008500';
+
+  // Update coalition builder
+  updateCoalitionFromTotals(totals);
 }
 
 /* ---- Reset ---- */
