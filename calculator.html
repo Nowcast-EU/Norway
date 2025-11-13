@@ -533,7 +533,9 @@ function computeConstituencyShares(){
     PARTIES.forEach(p=>{
       const baseNat=base[p]??0;
       const targetNat=target[p]??baseNat;
-      const ratio=(baseNat>eps)?(targetNat/baseNat):(targetNat>0?(targetNat/eps):0);
+const ratio = (baseNat > eps)
+  ? (targetNat / baseNat)
+  : 1;   // ❗ no baseline → do NOT scale
       const val=(row[p]??0)*ratio;
       out[p]=val;sum+=val;
     });
