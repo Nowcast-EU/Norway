@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<!-- Primary Meta Tags -->
+<title>🇳🇴 Norway | Interactive Seat Calculator</title>
+<meta name="title" content="🇳🇴 Norway | Interactive Seat Calculator">
+<meta name="description" content="">
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://nowcast-eu.github.io/Norway/calculator.html">
+<meta property="og:title" content="🇳🇴 Norway | Interactive Seat Calculator">
+<meta property="og:description" content="">
+<meta property="og:image" content="https://nowcast-eu.github.io/Norway/thumbnail.png">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:url" content="https://nowcast-eu.github.io/Norway/calculator.html">
+<meta name="twitter:title" content="🇳🇴 Norway | Interactive Seat Calculator">
+<meta name="twitter:description" content="">
+<meta name="twitter:image" content="https://nowcast-eu.github.io/Norway/thumbnail.png">
+
+<link rel="icon" type="image/png" href="https://nowcast-eu.github.io/Norway/NO_favicon.png">
+
+<style>
+  body {
+    font-family: Inter, system-ui, sans-serif;
+    background: #fff;
+    color: #0f172a;
+    margin: 0;
+    padding: 0 24px 24px 24px;
+  }
+
+  /* Narrower padding on mobile */
+  @media (max-width: 768px) {
+    body {
+      padding: 0 8px 24px 8px;
+    }
+  }
+
+  h1 {
+    text-align: center;
+    font-weight: 600;
+    font-size: 1.6rem;
+    margin: 28px 0 12px 0;
+  }
+
+  table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    margin-top: 12px; 
+    table-layout: fixed; 
+  }
+
+  th, td { 
+    padding: 4px 6px; 
+    border: 1px solid #e2e8f0; 
+    text-align: left; 
+    word-wrap: break-word; 
+  }
+
+  th { background: #f1f5f9; font-weight: 600; }
+  td.party-column { font-weight: bold; position: relative; padding-left: 14px; color: black; }
+  td.party-column::before { content: ""; position: absolute; left: 0; top: 0; width: 8px; height: 100%; border-radius: 2px 0 0 2px; background-color: var(--party-color); }
+  td.ge2024-column { font-style: italic; color: #999999; }
+  td.seats-column, td.diff-column { font-weight: bold; text-align: center; }
+  .diff-column.positive { color: #008500; }
+  .diff-column.negative { color: #bb0000; }
+  .diff-column.equal { color: #555555; }
+
+  .input-wrapper { display: flex; align-items: center; justify-content: flex-start; }
+  .input-wrapper input {
+    width: 50px; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px;
+    text-align: left; margin-right: 4px; transition: border-color 0.3s ease;
+  }
+  .percent-sign { font-size: 14px; }
+
+  /* --- BUTTONS --- */
+  .button-container { 
+    display: flex; 
+    gap: 8px; 
+    margin-top: 14px; 
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  button#calculate, button#reset {
+    background: #008500; 
+    color: #fff; 
+    border: none; 
+    border-radius: 6px;
+    padding: 8px 14px; 
+    cursor: pointer; 
+    transition: background 0.3s ease;
+  }
+
+  /* Calculate = 80%, Reset = 20% */
+  button#calculate { flex: 0 0 78%; }
+  button#reset { flex: 0 0 20%; }
+
+  tfoot td { font-weight: bold; text-align: center; background: #f1f5f9; }
+  tfoot td:first-child { text-align: left; padding-left: 14px; }
+
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type=number] { -moz-appearance: textfield; }
+
+  /* Coalition builder */
+  #coalition-builder { margin-top: 48px; }
+  .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  h3 { margin: 0; }
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-bottom: 15px; }
+  .legend-item {
+    display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;
+    border: 1px solid #ccc; border-radius: 8px; padding: 6px 10px; background: #f3f3f3;
+    transition: all 0.25s ease; opacity: 0.6; font-weight: normal;
+  }
+  .legend-item:hover { transform: translateY(-1px); }
+  .legend-item.active { opacity: 1; background: #ffffff; border-color: #999; box-shadow: 0 1px 3px rgba(0,0,0,0.15); font-weight: bold; }
+  .legend-box { width: 20px; height: 20px; border-radius: 4px; }
+  .bar-container { position: relative; height: 117px; background: #f0f0f0; border-radius: 10px; overflow: hidden; margin-bottom: 12px; width: 100%; }
+  .coalition-overlay { position: absolute; top: 0; left: 0; height: 100%; width: 0%; border-top-left-radius: 10px; border-bottom-left-radius: 10px; display: flex; overflow: hidden; transition: width 1s ease; }
+  .segment { height: 100%; flex-shrink: 0; border-radius: 0; }
+  .majority-line {
+    position: absolute; top: 0; bottom: 0; width: 2px;
+    background: repeating-linear-gradient(to bottom,#333,#333 5px,transparent 5px,transparent 10px);
+    left: 50%;
+  }
+  .counter { font-size: 22px; font-weight: bold; text-align: center; margin-bottom: 8px; }
+  .note { font-size: 13px; color: #555; text-align: center; }
+
+  /* --- MOBILE VIEW --- */
+  @media (max-width: 768px) {
+    table, th, td { font-size: 13px; }
+    .counter { font-size: 18px; }
+    h3 { font-size: 16px; }
+    .legend-item { font-size: 12px; padding: 5px 8px; }
+    .input-wrapper input { width: 45px; }
+
+    /* 👇 manually control column widths on mobile */
+    table th:nth-child(1), table td:nth-child(1) { width: 20%; } /* Party */
+    table th:nth-child(2), table td:nth-child(2) { width: 15%; } /* 2023 */
+    table th:nth-child(3), table td:nth-child(3) { width: 25%; } /* Votes */
+    table th:nth-child(4), table td:nth-child(4) { width: 20%; } /* Seats */
+    table th:nth-child(5), table td:nth-child(5) { width: 20%; } /* +/- */
+  }
+
+  @media (max-width: 480px) {
+    table, th, td { font-size: 12px; }
+    .input-wrapper input { width: 40px; }
+  }
+/* --- Uniform table header height + centered header text --- */
+th {
+  height: 30px;           /* 👈 match td height for visual consistency */
+  font-weight: 650;
+  text-align: center;     /* 👈 header text centered only */
+  vertical-align: middle; /* 👈 keep it perfectly aligned vertically */
+}
+
+td {
+  height: 30px;           /* 👈 match th height */
+  vertical-align: middle; /* 👈 ensures text sits evenly across rows */
+}
+/* --- Make the Totals row shorter --- */
+tfoot td {
+  height: 20px;             /* roughly 2/3 of 36px */
+  vertical-align: middle;
+}
+
+
+/* --- Responsive rectangular tab switcher --- */
+/* --- Final rectangular tab switcher --- */
+.tab-switcher {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f4f4f4;
+  border-radius: 12px;
+  padding: 3px;
+  border: 1px solid #d0d0d0;
+  overflow: hidden;
+  width: 140px;             /* base width desktop */
+  max-width: 100%;
+  height: 38px;
+  box-sizing: border-box;
+  -webkit-user-select: none; /* 👈 prevent highlight */
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.tab-btn {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  color: #111;
+  text-align: center;
+  line-height: 1;
+  white-space: nowrap;
+  transition: color 0.25s ease, font-weight 0.25s ease;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent; /* 👈 remove blue tap flash */
+}
+
+.tab-btn.active {
+  font-weight: 700;
+}
+
+.tab-btn:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.tab-pill {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  right: 50%;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 1;
+}
+
+/* --- Mobile scaling + perfect edge alignment --- */
+@media (max-width: 480px) {
+  .tab-switcher {
+    width: 120px;
+    height: 34px;
+    padding: 3px;
+  }
+  .tab-btn {
+    font-size: 13px;
+  }
+  .tab-pill {
+    top: 3px;
+    bottom: 3px;
+    left: 3px;
+    right: 50%;
+  }
+}
+
+</style>
+</head>
+
+<body>
+<h1>Norway | @Nowcast_EU Interactive Seat Calculator</h1>
+  
+<table>
+  <thead>
+    <tr>
+      <th>Party</th>
+      <th>2023</th>
+      <th>Votes (%)</th>
+      <th>Seats</th>
+      <th>+/- 2023</th>
+    </tr>
+  </thead>
+  <tbody id="tbody"></tbody>
+  <tfoot>
+    <tr>
+      <td>Totals</td>
+      <td></td>
+      <td id="total-votes">0.0%</td>
+      <td id="total-seats">0</td>
+      <td></td>
+    </tr>
+  </tfoot>
+</table>
+
+<div class="button-container">
+  <button id="calculate">Calculate</button>
+  <button id="reset">Reset</button>
+</div>
+
+<div id="coalition-builder">
+<div class="header-container">
+  <h3>Coalition Builder (User Generated)</h3>
+
+  <div class="tab-switcher">
+    <div class="tab-pill" id="tab-pill"></div>
+    <button class="tab-btn active" id="tab-result">Result</button>
+    <button class="tab-btn" id="tab-2023">2023</button>
+  </div>
+</div>
+
+  <div class="legend" id="legend"></div>
+  <div class="bar-container" id="bar">
+    <div class="coalition-overlay" id="coalition-overlay"></div>
+    <div class="majority-line" title="Majority (85 seats)"></div>
+  </div>
+  <div class="counter" id="counter">0 / 169</div>
+  <div class="note">Majority = 85 seats</div>
+</div>
+
+<script>
+const BASELINE = {"baseline_national": {"Ap": 0.28, "SV": 0.056, "Sp": 0.056, "Rødt": 0.053, "MDG": 0.047, "FrP": 0.239, "Høyre": 0.147, "KrF": 0.042, "Venstre": 0.037},
+    
+ "constituencies": [{
+  name: "Akershus",
+  Ap: 0.273, SV: 0.052, Sp: 0.029, Rødt: 0.042, MDG: 0.054, FrP: 0.236, Høyre: 0.194, KrF: 0.026, Venstre: 0.054
+},
+{
+  name: "Aust-Agder",
+  Ap: 0.269, SV: 0.039, Sp: 0.051, Rødt: 0.046, MDG: 0.034, FrP: 0.278, Høyre: 0.130, KrF: 0.081, Venstre: 0.026
+},
+{
+  name: "Buskerud",
+  Ap: 0.294, SV: 0.044, Sp: 0.055, Rødt: 0.040, MDG: 0.036, FrP: 0.276, Høyre: 0.153, KrF: 0.028, Venstre: 0.031
+},
+{
+  name: "Finnmark",
+  Ap: 0.281, SV: 0.052, Sp: 0.055, Rødt: 0.098, MDG: 0.022, FrP: 0.245, Høyre: 0.059, KrF: 0.021, Venstre: 0.012
+},
+{
+  name: "Hedmark",
+  Ap: 0.350, SV: 0.045, Sp: 0.136, Rødt: 0.048, MDG: 0.028, FrP: 0.211, Høyre: 0.090, KrF: 0.022, Venstre: 0.019
+},
+{
+  name: "Hordaland",
+  Ap: 0.267, SV: 0.058, Sp: 0.042, Rødt: 0.050, MDG: 0.049, FrP: 0.238, Høyre: 0.169, KrF: 0.050, Venstre: 0.034
+},
+{
+  name: "Møre og Romsdal",
+  Ap: 0.236, SV: 0.038, Sp: 0.073, Rødt: 0.035, MDG: 0.031, FrP: 0.323, Høyre: 0.126, KrF: 0.068, Venstre: 0.030
+},
+{
+  name: "Nordland",
+  Ap: 0.306, SV: 0.057, Sp: 0.086, Rødt: 0.066, MDG: 0.029, FrP: 0.256, Høyre: 0.112, KrF: 0.024, Venstre: 0.020
+},
+{
+  name: "Nord-Trøndelag",
+  Ap: 0.363, SV: 0.042, Sp: 0.148, Rødt: 0.052, MDG: 0.024, FrP: 0.195, Høyre: 0.090, KrF: 0.026, Venstre: 0.018
+},
+{
+  name: "Oppland",
+  Ap: 0.332, SV: 0.045, Sp: 0.158, Rødt: 0.045, MDG: 0.029, FrP: 0.214, Høyre: 0.092, KrF: 0.022, Venstre: 0.022
+},
+{
+  name: "Oslo",
+  Ap: 0.257, SV: 0.107, Sp: 0.008, Rødt: 0.072, MDG: 0.103, FrP: 0.143, Høyre: 0.185, KrF: 0.021, Venstre: 0.073
+},
+{
+  name: "Rogaland",
+  Ap: 0.237, SV: 0.037, Sp: 0.050, Rødt: 0.055, MDG: 0.027, FrP: 0.287, Høyre: 0.153, KrF: 0.084, Venstre: 0.026
+},
+{
+  name: "Sogn og Fjordane",
+  Ap: 0.309, SV: 0.043, Sp: 0.160, Rødt: 0.040, MDG: 0.033, FrP: 0.208, Høyre: 0.102, KrF: 0.043, Venstre: 0.029
+},
+{
+  name: "Sør-Trøndelag",
+  Ap: 0.320, SV: 0.069, Sp: 0.068, Rødt: 0.060, MDG: 0.058, FrP: 0.198, Høyre: 0.125, KrF: 0.025, Venstre: 0.037
+},
+{
+  name: "Telemark",
+  Ap: 0.313, SV: 0.041, Sp: 0.062, Rødt: 0.059, MDG: 0.033, FrP: 0.261, Høyre: 0.110, KrF: 0.050, Venstre: 0.021
+},
+{
+  name: "Troms",
+  Ap: 0.295, SV: 0.072, Sp: 0.063, Rødt: 0.074, MDG: 0.036, FrP: 0.258, Høyre: 0.109, KrF: 0.029, Venstre: 0.020
+},
+{
+  name: "Vest-Agder",
+  Ap: 0.228, SV: 0.039, Sp: 0.040, Rødt: 0.040, MDG: 0.035, FrP: 0.277, Høyre: 0.135, KrF: 0.130, Venstre: 0.031
+},
+{
+  name: "Vestfold",
+  Ap: 0.275, SV: 0.041, Sp: 0.033, Rødt: 0.049, MDG: 0.043, FrP: 0.276, Høyre: 0.165, KrF: 0.041, Venstre: 0.035
+},
+{
+  name: "Østfold",
+  Ap: 0.298, SV: 0.043, Sp: 0.048, Rødt: 0.052, MDG: 0.034, FrP: 0.287, Høyre: 0.125, KrF: 0.039, Venstre: 0.025
+}
+]};
+
+const CONSTITUENCY_SEATS = { "Akershus": 18,
+  "Aust-Agder": 3,
+  "Buskerud": 7,
+  "Finnmark": 4,
+  "Hedmark": 6,
+  "Hordaland": 15,
+  "Møre og Romsdal": 7,
+  "Nordland": 8,
+  "Nord-Trøndelag": 4,
+  "Oppland": 5,
+  "Oslo": 19,
+  "Rogaland": 13,
+  "Sogn og Fjordane": 3,
+  "Sør-Trøndelag": 9,
+  "Telemark": 5,
+  "Troms": 5,
+  "Vest-Agder": 5,
+  "Vestfold": 6,
+  "Østfold": 8};
+
+
+/* ---- Party setup ---- */
+const PARTIES = ["Ap", "SV", "Sp", "Rødt", "MDG", "FrP", "Høyre", "KrF", "Venstre"];
+const PARTY_COLORS = {"Ap":"#1D84CE","SV":"#EF1C27","Sp":"#63BE21","Rødt":"#EF4B91","MDG":"#9269F5","FrP":"#785A46","Høyre":"#FFB232","KrF":"#00C7AE","Venstre":"#00AC8E"};
+const GE2024 = {"Ap":28.0,"SV":5.6,"Sp":5.6,"Rødt":5.3,"MDG":4.7,"FrP":23.9,"Høyre":14.7,"KrF":4.2,"Venstre":3.7};
+const DEFAULTS = {"Ap":25.0,"SV":6.0,"Sp":6.0,"Rødt":7.0,"MDG":4.0,"FrP":23.0,"Høyre":16.0,"KrF":5.0,"Venstre":4.0};
+const PREV_2023 = {"Ap":53,"SV":9,"Sp":9,"Rødt":9,"MDG":8,"FrP":47,"Høyre":24,"KrF":7,"Venstre":3};
+
+const parties = PARTIES.map(name => ({
+  name,
+  color: PARTY_COLORS[name] || "#999",
+  ge2024: GE2024[name],
+  votes: DEFAULTS[name],
+  final: 0
+}));
+
+  // --- UNIVERSAL INPUT BEHAVIOUR FOR ALL CALCULATORS ---
+function attachInputBehaviour(calculate, updateVoteTotal) {
+  const inputs = document.querySelectorAll('.input-wrapper input');
+
+  inputs.forEach((input, index) => {
+    let originalValue = input.value;
+    let hasChanged = false;
+
+    // When user focuses: store old value, clear visually (but keep logical value)
+    input.addEventListener('focus', () => {
+      originalValue = input.value;
+      input.value = ''; // visually empty
+      hasChanged = false;
+    });
+
+    // When user types: mark changed and update totals
+    input.addEventListener('input', () => {
+      hasChanged = true;
+      updateVoteTotal();
+      const calcBtn = document.getElementById('calculate');
+      if (calcBtn) calcBtn.style.background = '#ffa500'; // optional UI cue
+    });
+
+    // When user leaves field
+    input.addEventListener('blur', () => {
+      // restore old if blank or invalid
+      if (input.value === '' || isNaN(parseFloat(input.value))) {
+        input.value = originalValue;
+      } else {
+        input.value = parseFloat(input.value).toFixed(1); // format to one decimal
+      }
+
+      // only recalc if changed
+      if (hasChanged && parseFloat(input.value) !== parseFloat(originalValue)) {
+        calculate();
+      }
+    });
+
+    // When user presses Enter
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+
+        if (input.value === '' || isNaN(parseFloat(input.value))) {
+          input.value = originalValue;
+        } else {
+          input.value = parseFloat(input.value).toFixed(1);
+        }
+
+        // move to next input
+        if (inputs[index + 1]) {
+          inputs[index + 1].focus();
+        } else {
+          inputs[0].focus(); // loop to first input
+        }
+      }
+    });
+  });
+}
+
+/* ---- Render table ---- */
+function renderTable(){
+  const tbody=document.getElementById('tbody');
+  tbody.innerHTML=parties.map((p,i)=>`
+    <tr>
+      <td class="party-column" style="--party-color:${p.color}">${p.name}</td>
+      <td class="ge2024-column">${p.ge2024.toFixed(1)}%</td>
+      <td>
+        <div class="input-wrapper">
+          <input type="number" id="votes-${i}" value="${p.votes.toFixed(1)}" min="0" max="100" step="0.1">
+          <span class="percent-sign">%</span>
+        </div>
+      </td>
+      <td class="seats-column" id="seats-${i}">—</td>
+      <td class="diff-column" id="diff-${i}">—</td>
+    </tr>`).join('');
+
+  attachInputBehaviour(calculate, updateVoteTotal);
+  updateVoteTotal();
+}
+
+function updateVoteTotal(){
+  let sum=0;
+  parties.forEach((p,i)=>{
+    sum+=parseFloat(document.getElementById(`votes-${i}`).value)||0;
+  });
+  document.getElementById('total-votes').textContent=sum.toFixed(1)+'%';
+}
+
+/* ---- Proportional swing ---- */
+function computeConstituencyShares(){
+  const target={};
+  PARTIES.forEach((n,i)=>target[n]=(parseFloat(document.getElementById(`votes-${i}`).value)||0)/100);
+  const base=BASELINE.baseline_national;const eps=1e-9;
+  return BASELINE.constituencies.map(row=>{
+    const out={name:row.name};let sum=0;
+    PARTIES.forEach(p=>{
+      const baseNat=base[p]??0;
+      const targetNat=target[p]??baseNat;
+      const ratio=(baseNat>eps)?(targetNat/baseNat):(targetNat>0?(targetNat/eps):0);
+      const val=(row[p]??0)*ratio;
+      out[p]=val;sum+=val;
+    });
+    if(sum>0)PARTIES.forEach(p=>out[p]=out[p]/sum);
+    return out;
+  });
+}
+
+// ---- Modified Sainte-Laguë (Norway) ----
+// first divisor = 1.4, then 3, 5, 7, 9...
+function sainteLagueSeats(votes, seats, validParties) {
+  const alloc = Object.fromEntries(validParties.map(p => [p, 0]));
+
+  for (let s = 0; s < seats; s++) {
+    let bestParty = null;
+    let bestQuotient = -1;
+
+    validParties.forEach(p => {
+      const divisor = alloc[p] === 0 ? 1.4 : (2 * alloc[p] + 1); // 1.4, 3, 5, 7...
+      const quotient = (votes[p] || 0) / divisor;
+
+      if (quotient > bestQuotient) {
+        bestQuotient = quotient;
+        bestParty = p;
+      }
+    });
+
+    alloc[bestParty] += 1;
+  }
+
+  return alloc;
+}
+
+  // ---- National levelling seats (19 seats, 4% rule) ----
+function allocateLevellingSeats(nationalVotes, constituencyResults, constituencySeatCounts) {
+  const TOTAL_TOPUP = 19;
+
+  // Step 1: National threshold
+  const totalVotes = Object.values(nationalVotes).reduce((a,b)=>a+b,0);
+  const eligible = PARTIES.filter(p => (nationalVotes[p] / totalVotes) >= 0.04);
+
+  // Step 2: National Sainte-Laguë to allocate 19 seats
+  const natAlloc = Object.fromEntries(eligible.map(p => [p, 0]));
+  const divisors = {}; // per-party divisor index
+
+  eligible.forEach(p => divisors[p] = 0);
+
+  for (let i = 0; i < TOTAL_TOPUP; i++) {
+    let bestParty = null;
+    let bestScore = -1;
+
+    eligible.forEach(p => {
+      const divisor = (2 * divisors[p] + 1); // 1,3,5,...
+      const score = nationalVotes[p] / divisor;
+      if (score > bestScore) {
+        bestScore = score;
+        bestParty = p;
+      }
+    });
+
+    natAlloc[bestParty] += 1;
+    divisors[bestParty] += 1;
+  }
+
+  // Step 3: Distribute seats to constituencies (1 each max)
+  const remaining = Object.assign({}, natAlloc);
+  const finalAlloc = Object.fromEntries(PARTIES.map(p => [p, 0]));
+  const usedConstituencies = new Set();
+
+  while (Object.values(remaining).some(x => x > 0)) {
+    let best = null;
+
+    BASELINE.constituencies.forEach(row => {
+      const constName = row.name;
+      if (usedConstituencies.has(constName)) return;
+
+      PARTIES.forEach(p => {
+        if (remaining[p] <= 0) return;
+
+        // local quotient: votes_in_const / (seats_won_in_const + 1)
+        const localVotes = row[p] || 0;
+        const seatsHere = constituencyResults[constName][p] || 0;
+        const score = localVotes / (seatsHere + 1);
+
+        if (!best || score > best.score) {
+          best = { party: p, constName, score };
+        }
+      });
+    });
+
+    if (!best) break;
+
+    finalAlloc[best.party] += 1;
+    remaining[best.party] -= 1;
+    usedConstituencies.add(best.constName);
+  }
+
+  return finalAlloc;
+}
+
+/* ---- Calculate ---- */
+function calculate(){
+  const nationalVotes={};
+  parties.forEach((p,i)=>{
+    p.votes=parseFloat(document.getElementById(`votes-${i}`).value)||0;
+    nationalVotes[p.name]=p.votes;
+  });
+
+  const perConst=computeConstituencyShares();
+  const totals=Object.fromEntries(PARTIES.map(p=>[p,0]));
+
+perConst.forEach(row => {
+  const sVotes = row; // local votes in this constituency
+
+// 👇 All parties are valid — no constituency threshold
+const validParties = PARTIES;
+
+// 👇 Allocate seats among all parties
+const s = sainteLagueSeats(
+  sVotes,
+  CONSTITUENCY_SEATS[row.name] || 6,
+  validParties
+);
+
+  PARTIES.forEach(p => totals[p] += (s[p] || 0));
+});
+
+  PARTIES.forEach((n,i)=>{
+    const seats=totals[n];
+    document.getElementById(`seats-${i}`).textContent=seats;
+    parties[i].final=seats;
+
+    const diff=seats-(PREV_2023[n]||0);
+    const diffCell=document.getElementById(`diff-${i}`);
+    if(diff>0){diffCell.textContent=`+${diff}`;diffCell.className='diff-column positive';}
+    else if(diff<0){diffCell.textContent=`${diff}`;diffCell.className='diff-column negative';}
+    else{diffCell.textContent='(=)';diffCell.className='diff-column equal';}
+  });
+
+  document.getElementById('total-seats').textContent=Object.values(totals).reduce((a,b)=>a+b,0);
+  document.getElementById('calculate').style.background='#008500';
+
+    // Build constituency-level seat map for levelling seat allocation
+  const constituencyResults = {};
+  perConst.forEach(row => {
+    constituencyResults[row.name] = {};
+    const sVotes = row;
+    const s = sainteLagueSeats(sVotes, CONSTITUENCY_SEATS[row.name], PARTIES);
+    PARTIES.forEach(p => constituencyResults[row.name][p] = s[p] || 0);
+  });
+
+  // Levelling seats
+  const topups = allocateLevellingSeats(nationalVotes, constituencyResults, CONSTITUENCY_SEATS);
+
+  // Add levelling seats to totals
+  PARTIES.forEach(p => {
+    totals[p] += topups[p] || 0;
+  });
+
+  updateCoalitionFromTotals(totals);
+}
+
+/* ---- Reset ---- */
+document.getElementById('reset').addEventListener('click', ()=>{
+  parties.forEach((p,i)=>{
+    const input = document.getElementById(`votes-${i}`);
+    input.value = DEFAULTS[p.name].toFixed(1);
+  });
+  updateVoteTotal();  // refresh footer totals immediately
+  calculate();         // recalc seats + coalition builder
+});
+document.getElementById('calculate').addEventListener('click',calculate);
+renderTable();
+document.addEventListener('DOMContentLoaded',()=>calculate());
+
+/* ---- Coalition Builder ---- */
+const COAL_TOTAL=169,COAL_MAJ=85;
+let selected=[];
+const legend=document.getElementById("legend"),overlay=document.getElementById("coalition-overlay"),counter=document.getElementById("counter");
+
+function toggleParty(n){
+  if(selected.includes(n))selected=selected.filter(x=>x!==n);
+  else selected.push(n);
+  renderCoalition(lastTotalsCache);
+}
+
+let lastTotalsCache=null;
+function updateCoalitionFromTotals(t){lastTotalsCache=t;renderCoalition(t);}
+
+function renderCoalition(t){
+  if(!t)return;
+overlay.innerHTML = "";
+legend.innerHTML = "";
+
+// 🟢 Only show parties that currently have seats
+const validParties = PARTIES.filter(n => (t[n] || 0) > 0);
+
+// ❌ Do NOT clear "selected" — this allows zero-seat parties to stay selected
+// selected = selected.filter(n => validParties.includes(n));
+
+validParties.forEach(n => {
+  const s = t[n] || 0;
+  const item = document.createElement('div');
+  item.className = 'legend-item' + (selected.includes(n) ? ' active' : '');
+  item.innerHTML = `<div class="legend-box" style="background:${PARTY_COLORS[n] || '#999'}"></div> <strong>${n}</strong> ${s}`;
+  item.onclick = () => toggleParty(n);
+  legend.appendChild(item);
+});
+
+  const totalSel=selected.reduce((s,n)=>s+(t[n]||0),0);
+  const width=(totalSel/COAL_TOTAL)*100;
+  overlay.style.width="0%";
+  overlay.innerHTML="";
+  if(totalSel>0){
+    selected.forEach(n=>{
+      const s=t[n]||0;
+      const seg=document.createElement('div');
+      seg.className='segment';
+      seg.style.flexBasis=((s/totalSel)*100)+'%';
+      seg.style.background=PARTY_COLORS[n]||"#999";
+      overlay.appendChild(seg);
+    });
+  }
+  requestAnimationFrame(()=>overlay.style.width=width+"%");
+  counter.textContent=`${totalSel} / ${COAL_TOTAL}`;
+  counter.style.color=totalSel>=COAL_MAJ?"#2BA84A":"#000";
+  document.querySelectorAll(".legend-item").forEach(el=>{
+    const n=el.querySelector("strong").textContent;
+    el.classList.toggle("active",selected.includes(n));
+  });
+}
+/* ---- Tab Switching (fixed state handling) ---- */
+const tabResult = document.getElementById("tab-result");
+const tab2023 = document.getElementById("tab-2023");
+let is2023View = false;
+let lastUserTotals = null; // store the most recent calculated result
+
+// --- patch: remember user totals whenever calculator runs ---
+const originalUpdateCoalitionFromTotals = updateCoalitionFromTotals;
+updateCoalitionFromTotals = function(t) {
+  if (!is2023View) lastUserTotals = t; // only store when user-generated
+  originalUpdateCoalitionFromTotals(t);
+};
+
+tabResult.addEventListener("click", () => {
+  if (!tabResult.classList.contains("active")) {
+    tabResult.classList.add("active");
+    tab2023.classList.remove("active");
+    is2023View = false;
+    document.getElementById("tab-pill").style.transform = "translateX(0%)";
+    updateCoalitionFromTotals(lastUserTotals || lastTotalsCache);
+  }
+});
+
+tab2023.addEventListener("click", () => {
+  if (!tab2023.classList.contains("active")) {
+    tab2023.classList.add("active");
+    tabResult.classList.remove("active");
+    is2023View = true;
+    document.getElementById("tab-pill").style.transform = "translateX(100%)";
+    originalUpdateCoalitionFromTotals(PREV_2023);
+  }
+});
+
+
+
+</script>
+</body>
+</html>
