@@ -584,15 +584,9 @@ const totals = Object.fromEntries(REAL_PARTIES.map(p => [p, 0]));
   perConst.forEach(row => {
     const sVotes = row;
 
-    // Local constituency-level threshold (3%)
-    let totalVotes = 0;
-    PARTIES.forEach(p => totalVotes += sVotes[p] || 0);
-
-    const EPS = 1e-9;
- const validParties = PARTIES.filter(
-  p =>
-    !["OTH", "Left", "Right"].includes(p) &&
-    ((sVotes[p] || 0) + EPS) >= 0.03 * totalVotes
+// Norway has *no* constituency threshold
+const validParties = PARTIES.filter(
+  p => !["OTH", "Left", "Right"].includes(p)
 );
 
     // Modified Sainte-Laguë
