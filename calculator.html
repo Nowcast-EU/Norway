@@ -605,14 +605,18 @@ function calculate(){
 
   // ---- Step 3: National threshold (4%) ----
   const NATIONAL_THRESHOLD = 0.04;
- const thresholdEligible = PARTIES.filter(
-  p => p !== "OTH" && (nationalVotes[p] / 100) >= NATIONAL_THRESHOLD
+const eligible = PARTIES.filter(
+  p =>
+    !["Left", "Right", "OTH"].includes(p) &&
+    (nationalVotes[p] / 100) >= NATIONAL_THRESHOLD
 );
 
   // ---- Step 4: National leveling seats (19 seats total) ----
   function allocateLevelingSeats(totalConstituency, nationalVotes){
-  const eligible = PARTIES.filter(
-  p => p !== "OTH" && (nationalVotes[p] / 100) >= NATIONAL_THRESHOLD
+const eligible = PARTIES.filter(
+  p =>
+    !["Left", "Right", "OTH"].includes(p) &&
+    (nationalVotes[p] / 100) >= NATIONAL_THRESHOLD
 );
 
     const ideal = Object.fromEntries(PARTIES.map(p => [p, 0]));
