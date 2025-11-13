@@ -5,25 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
 <!-- Primary Meta Tags -->
-<title>🇳🇴 Norway | Interactive Seat Calculator</title>
-<meta name="title" content="🇳🇴 Norway | Interactive Seat Calculator">
+<title>🇪🇸 Norway | Interactive Seat Calculator</title>
+<meta name="title" content="🇪🇸 Norway | Interactive Seat Calculator">
 <meta name="description" content="">
 
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://nowcast-eu.github.io/Norway/calculator.html">
-<meta property="og:title" content="🇳🇴 Norway | Interactive Seat Calculator">
+<meta property="og:title" content="🇪🇸 Norway | Interactive Seat Calculator">
 <meta property="og:description" content="">
 <meta property="og:image" content="https://nowcast-eu.github.io/Norway/thumbnail.png">
 
 <!-- Twitter -->
 <meta name="twitter:card" content="summary">
 <meta name="twitter:url" content="https://nowcast-eu.github.io/Norway/calculator.html">
-<meta name="twitter:title" content="🇳🇴 Norway | Interactive Seat Calculator">
+<meta name="twitter:title" content="🇪🇸 Norway | Interactive Seat Calculator">
 <meta name="twitter:description" content="">
 <meta name="twitter:image" content="https://nowcast-eu.github.io/Norway/thumbnail.png">
 
-<link rel="icon" type="image/png" href="https://nowcast-eu.github.io/Norway/NO_favicon.png">
+<link rel="icon" type="image/png" href="https://nowcast-eu.github.io/Norway/ES_favicon.png">
 
 <style>
   body {
@@ -253,44 +253,6 @@ tfoot td {
   }
 }
 
-/* --- Highlight Left and Right rows (only bottom line, neutral tint) --- */
-.party-row.Left td {
-  background-color: #f5f5f5;   /* light neutral grey */
-  border-bottom: 2px solid #0000FF; /* bold blue line below */
-  height: 16px;                /* slightly thinner row */
-  vertical-align: middle;
-}
-
-.party-row.Right td {
-  background-color: #f5f5f5;   /* light neutral grey */
-  border-bottom: 2px solid #FF0000; /* bold red line below */
-  height: 16px;
-  vertical-align: middle;
-}
-  
-  /* --- Subtle highlight for OTH row --- */
-.party-row.OTH td {
-  background-color: #f5f5f5;   /* same light grey as Left/Right */
-  height: 20px;                /* consistent thinner height */
-  vertical-align: middle;
-}
-
-  /* --- Disabled coalition input boxes --- */
-.disabled-input {
-  background-color: rgba(200, 200, 200, 0.25);
-  color: #555;
-  cursor: not-allowed;
-  border: 1px solid #ccc;
-}
-
-  /* --- Smaller input boxes for coalition total rows (Left / Right) --- */
-.party-row.Left .input-wrapper input,
-.party-row.Right .input-wrapper input {
-  height: var(--coalition-input-h, 15px); /* adjustable height variable */
-  padding: 2px 4px;
-  font-size: 12px;
-}
-
 </style>
 </head>
 
@@ -301,10 +263,10 @@ tfoot td {
   <thead>
     <tr>
       <th>Party</th>
-      <th>Sep 2025</th>
+      <th>2023</th>
       <th>Votes (%)</th>
       <th>Seats</th>
-      <th>+/- 2025</th>
+      <th>+/- 2023</th>
     </tr>
   </thead>
   <tbody id="tbody"></tbody>
@@ -331,7 +293,7 @@ tfoot td {
   <div class="tab-switcher">
     <div class="tab-pill" id="tab-pill"></div>
     <button class="tab-btn active" id="tab-result">Result</button>
-    <button class="tab-btn" id="tab-2023">2025</button>
+    <button class="tab-btn" id="tab-2023">2023</button>
   </div>
 </div>
 
@@ -345,57 +307,19 @@ tfoot td {
 </div>
 
 <script>
-const BASELINE = {"baseline_national": {"Rødt": 0.06609, "SV": 0.06021, "MDG": 0.04243, "Ap": 0.25334, "Sp": 0.05469, "V": 0.04277, "KrF": 0.04699, "Høyre": 0.16218, "FrP": 0.23331},
+const BASELINE = {"baseline_national": {"Ap": 0.28, "SV": 0.056, "Sp": 0.056, "Rødt": 0.053, "MDG": 0.047, "FrP": 0.239, "Høyre": 0.147, "KrF": 0.042, "Venstre": 0.037},
     
- "constituencies": [{ name: "Akershus", Rødt:0.052376358, SV:0.055906141, MDG:0.048753318, Ap:0.247008183, Sp:0.028321361, Left:0, V:0.06241625, KrF:0.029087697, Høyre:0.215499685, FrP:0.231349295, Right:0, OTH:0.0 },
-  { name: "Aust-Agder", Rødt:0.057364583, SV:0.041929606, MDG:0.030696533, Ap:0.243389016, Sp:0.049806532, Left:0, V:0.030052269, KrF:0.090619363, Høyre:0.144407006, FrP:0.272521628, Right:0, OTH:0.0 },
-  { name: "Buskerud", Rødt:0.049882246, SV:0.047305196, MDG:0.032502212, Ap:0.266008813, Sp:0.053712926, Left:0, V:0.035831551, KrF:0.031325212, Høyre:0.169955937, FrP:0.27056104, Right:0, OTH:0.0 },
-  { name: "Finnmark", Rødt:0.122211502, SV:0.055906141, MDG:0.019862463, Ap:0.254246518, Sp:0.053712926, Left:0, V:0.013870278, KrF:0.023493909, Høyre:0.065538564, FrP:0.240171938, Right:0, OTH:0.0 },
-  { name: "Hedmark", Rødt:0.059858695, SV:0.048380314, MDG:0.025279498, Ap:0.316677158, Sp:0.132817418, Left:0, V:0.021961273, KrF:0.024612667, Høyre:0.099974081, FrP:0.206841955, Right:0, OTH:0.0 },
-  { name: "Hordaland", Rødt:0.062352807, SV:0.062356849, MDG:0.044239122, Ap:0.241579432, Sp:0.041017144, Left:0, V:0.039299121, KrF:0.055937879, Høyre:0.187729107, FrP:0.233309883, Right:0, OTH:0.0 },
-  { name: "Møre og Romsdal", Rødt:0.043646965, SV:0.040854487, MDG:0.027988016, Ap:0.213530884, Sp:0.061291702, Left:0, V:0.034675695, KrF:0.076075515, Høyre:0.139963713, FrP:0.316634841, Right:0, OTH:0.0 },
-  { name: "Nordland", Rødt:0.082305706, SV:0.061281731, MDG:0.026182337, Ap:0.276866315, Sp:0.083987485, Left:0, V:0.02311713, KrF:0.026850182, Høyre:0.124412189, FrP:0.250955168, Right:0, OTH:0.0 },
-  { name: "Nord-Trøndelag", Rødt:0.064846919, SV:0.04515496, MDG:0.021668141, Ap:0.328439452, Sp:0.144536602, Left:0, V:0.020805417, KrF:0.029087697, Høyre:0.099974081, FrP:0.191157257, Right:0, OTH:0.0 },
-  { name: "Oppland", Rødt:0.056117526, SV:0.048380314, MDG:0.026182337, Ap:0.300390904, Sp:0.154302588, Left:0, V:0.025428843, KrF:0.024612667, Høyre:0.102195727, FrP:0.209782836, Right:0, OTH:0.0 },
-  { name: "Oslo", Rødt:0.089788042, SV:0.115037636, MDG:0.092992439, Ap:0.232531513, Sp:0.007812789, Left:0, V:0.084377524, KrF:0.023493909, Høyre:0.205502277, FrP:0.140181988, Right:0, OTH:0.0 },
-  { name: "Rogaland", Rødt:0.068588088, SV:0.039779369, MDG:0.024376659, Ap:0.214435675, Sp:0.048829933, Left:0, V:0.030052269, KrF:0.093975636, Høyre:0.169955937, FrP:0.28134427, Right:0, OTH:0.0 },
-  { name: "Sogn og Fjordane", Rødt:0.049882246, SV:0.046230078, MDG:0.029793694, Ap:0.279580691, Sp:0.156255786, Left:0, V:0.033519838, KrF:0.048106576, Høyre:0.113303958, FrP:0.203901074, Right:0, OTH:0.0 },
-  { name: "Sør-Trøndelag", Rødt:0.074823369, SV:0.074183148, MDG:0.052364675, Ap:0.289533401, Sp:0.066408709, Left:0, V:0.04276669, KrF:0.027968939, Høyre:0.13885289, FrP:0.194098138, Right:0, OTH:0.0 },
-  { name: "Telemark", Rødt:0.073576313, SV:0.044079842, MDG:0.029793694, Ap:0.283199858, Sp:0.060549117, Left:0, V:0.024272986, KrF:0.055937879, Høyre:0.122190543, FrP:0.255856636, Right:0, OTH:0.0 },
-  { name: "Troms", Rødt:0.092282155, SV:0.077408503, MDG:0.032502212, Ap:0.266913604, Sp:0.061525716, Left:0, V:0.02311713, KrF:0.03244397, Høyre:0.12107972, FrP:0.252915755, Right:0, OTH:0.0 },
-  { name: "Vest-Agder", Rødt:0.049882246, SV:0.041929606, MDG:0.031599373, Ap:0.206292548, Sp:0.039063946, Left:0, V:0.035831551, KrF:0.145438484, Høyre:0.149961121, FrP:0.271541334, Right:0, OTH:0.0 },
-  { name: "Vestfold", Rødt:0.061105751, SV:0.044079842, MDG:0.038822086, Ap:0.248817767, Sp:0.032227756, Left:0, V:0.040454977, KrF:0.04586906, Høyre:0.183285815, FrP:0.27056104, Right:0, OTH:0.0 },
-  { name: "Østfold", Rødt:0.064846919, SV:0.046230078, MDG:0.030696533, Ap:0.26962798, Sp:0.046876736, Left:0, V:0.028896412, KrF:0.043631545, Høyre:0.13885289, FrP:0.28134427, Right:0, OTH:0.0 }]};
+ "constituencies": [PLACEHOLDER]};
 
-const CONSTITUENCY_SEATS = {
-  "Akershus": 18,
-  "Aust-Agder": 3,
-  "Buskerud": 7,
-  "Finnmark": 4,
-  "Hedmark": 6,
-  "Hordaland": 15,
-  "Møre og Romsdal": 7,
-  "Nordland": 8,
-  "Nord-Trøndelag": 4,
-  "Oppland": 5,
-  "Oslo": 19,
-  "Rogaland": 13,
-  "Sogn og Fjordane": 3,
-  "Sør-Trøndelag": 9,
-  "Telemark": 5,
-  "Troms": 5,
-  "Vest-Agder": 5,
-  "Vestfold": 6,
-  "Østfold": 8
-};
+const CONSTITUENCY_SEATS = {PLACEHOLDER};
 
 
 /* ---- Party setup ---- */
-const PARTIES = ["Ap", "SV", "Sp", "Rødt", "MDG", "Left", "FrP", "Høyre", "KrF", "V", "Right", "OTH"];
-const PARTY_COLORS = {"Ap":"#03386A","SV":"#008000","Sp":"#0087DC","Rødt":"#2149A7","MDG":"#2149A7","Left":"#0000FF","FrP":"#EF1C27","Høyre":"#FFD700","KrF":"#CC0066","V":"#FF66CC","Right":"#FF0000","OTH":"#DADADA"};
-const GE2024 = {"Ap":26.0,"SV":8.8,"Sp":8.1,"Rødt":0.9,"MDG":0.9,"Left":43.8,"FrP":19.1,"Høyre":15.4,"KrF":3.6,"V":0.0,"Right":41.5,"OTH":6.9};
-const DEFAULTS = {"Ap":31.0,"SV":8.5,"Sp":8.5,"Rødt":1.0,"MDG":1.0,"Left":49.0,"FrP":22.0,"Høyre":13.0,"KrF":7.0,"V":2.0,"Right":46.0,"OTH":3.0};
-const PREV_2023 = {"Ap":119,"SV":66,"Sp":45,"Rødt":7,"MDG":7,"Left":237,"FrP":69,"Høyre":52,"KrF":12,"V":9,"Right":136,"OTH":6};
+const PARTIES = ["Ap", "SV", "Sp", "Rødt", "MDG", "FrP", "Høyre", "KrF", "Venstre"];
+const PARTY_COLORS = {"Ap":"#1D84CE","SV":"#EF1C27","Sp":"#63BE21","Rødt":"#EF4B91","MDG":"#9269F5","FrP":"#785A46","Høyre":"#FFB232","KrF":"#00C7AE","Venstre":"#00AC8E"};
+const GE2024 = {"Ap":28.0,"SV":5.6,"Sp":5.6,"Rødt":5.3,"MDG":4.7,"FrP":23.9,"Høyre":14.7,"KrF":4.2,"Venstre":3.7};
+const DEFAULTS = {"Ap":25.0,"SV":6.0,"Sp":6.0,"Rødt":7.0,"MDG":4.0,"FrP":23.0,"Høyre":16.0,"KrF":5.0,"Venstre":4.0};
+const PREV_2023 = {"Ap":53,"SV":9,"Sp":9,"Rødt":9,"MDG":8,"FrP":47,"Høyre":24,"KrF":7,"Venstre":3};
 
 const parties = PARTIES.map(name => ({
   name,
@@ -443,27 +367,25 @@ function attachInputBehaviour(calculate, updateVoteTotal) {
       }
     });
 
-  // When user presses Enter or Tab → move to next *enabled* input
-input.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' || e.key === 'Tab') {
-    e.preventDefault();
+    // When user presses Enter
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
 
-    if (input.value === '' || isNaN(parseFloat(input.value))) {
-      input.value = originalValue;
-    } else {
-      input.value = parseFloat(input.value).toFixed(1);
-    }
+        if (input.value === '' || isNaN(parseFloat(input.value))) {
+          input.value = originalValue;
+        } else {
+          input.value = parseFloat(input.value).toFixed(1);
+        }
 
-    // Find the next interactable input (skip disabled ones)
-    let nextIndex = (index + 1) % inputs.length;
-    while (inputs[nextIndex].disabled) {
-      nextIndex = (nextIndex + 1) % inputs.length;
-      if (nextIndex === index) break; // safety guard
-    }
-
-    inputs[nextIndex].focus();
-  }
-});
+        // move to next input
+        if (inputs[index + 1]) {
+          inputs[index + 1].focus();
+        } else {
+          inputs[0].focus(); // loop to first input
+        }
+      }
+    });
   });
 }
 
@@ -471,27 +393,15 @@ input.addEventListener('keydown', (e) => {
 function renderTable(){
   const tbody=document.getElementById('tbody');
   tbody.innerHTML=parties.map((p,i)=>`
-  <tr class="party-row ${p.name}">
-    <td class="party-column" style="--party-color:${p.color}">${p.name}</td>
-<td class="ge2024-column">
-  ${
-    p.name === "V" || p.name === "Azione"
-      ? "N/A"
-      : p.name === "Right"
-      ? "*41.5%"
-      : `${p.ge2024.toFixed(1)}%`
-  }
-</td>
-         <td>
-      <div class="input-wrapper">
-        ${
-          (p.name === "Left" || p.name === "Right" || p.name === "OTH")
-            ? `<input type="number" id="votes-${i}" value="${p.votes.toFixed(1)}" disabled class="disabled-input">`
-            : `<input type="number" id="votes-${i}" value="${p.votes.toFixed(1)}" min="0" max="100" step="0.1">`
-        }
-        <span class="percent-sign">%</span>
-      </div>
-    </td>
+    <tr>
+      <td class="party-column" style="--party-color:${p.color}">${p.name}</td>
+      <td class="ge2024-column">${p.ge2024.toFixed(1)}%</td>
+      <td>
+        <div class="input-wrapper">
+          <input type="number" id="votes-${i}" value="${p.votes.toFixed(1)}" min="0" max="100" step="0.1">
+          <span class="percent-sign">%</span>
+        </div>
+      </td>
       <td class="seats-column" id="seats-${i}">—</td>
       <td class="diff-column" id="diff-${i}">—</td>
     </tr>`).join('');
@@ -500,27 +410,12 @@ function renderTable(){
   updateVoteTotal();
 }
 
-function updateVoteTotal() {
-  const getVal = (party) =>
-    parseFloat(document.querySelector(`#votes-${PARTIES.indexOf(party)}`)?.value) || 0;
-
-  // --- coalition sums ---
-  const CDX_sum = getVal("Ap") + getVal("SV") + getVal("Sp") + getVal("Rødt");
-  const CSX_sum = getVal("FrP") + getVal("Høyre") + getVal("KrF") + getVal("V") + getVal("+E");
-  const AZIONE_val = getVal("Azione");
-  const OTH_sum = 100 - (CDX_sum + CSX_sum + AZIONE_val);
-
-  // --- update disabled inputs ---
-  const CDX_input = document.querySelector(`#votes-${PARTIES.indexOf("Left")}`);
-  const CSX_input = document.querySelector(`#votes-${PARTIES.indexOf("Right")}`);
-  const OTH_input = document.querySelector(`#votes-${PARTIES.indexOf("OTH")}`);
-  if (CDX_input) CDX_input.value = CDX_sum.toFixed(1);
-  if (CSX_input) CSX_input.value = CSX_sum.toFixed(1);
-  if (OTH_input) OTH_input.value = OTH_sum.toFixed(1);
-
-  // --- total sum (should always be Left + Right + Azione + OTH) ---
-  const total = CDX_sum + CSX_sum + AZIONE_val + OTH_sum;
-  document.getElementById("total-votes").textContent = total.toFixed(1) + "%";
+function updateVoteTotal(){
+  let sum=0;
+  parties.forEach((p,i)=>{
+    sum+=parseFloat(document.getElementById(`votes-${i}`).value)||0;
+  });
+  document.getElementById('total-votes').textContent=sum.toFixed(1)+'%';
 }
 
 /* ---- Proportional swing ---- */
@@ -533,9 +428,7 @@ function computeConstituencyShares(){
     PARTIES.forEach(p=>{
       const baseNat=base[p]??0;
       const targetNat=target[p]??baseNat;
-const ratio = (baseNat > eps)
-  ? (targetNat / baseNat)
-  : 1;   // ❗ no baseline → do NOT scale
+      const ratio=(baseNat>eps)?(targetNat/baseNat):(targetNat>0?(targetNat/eps):0);
       const val=(row[p]??0)*ratio;
       out[p]=val;sum+=val;
     });
@@ -544,157 +437,62 @@ const ratio = (baseNat > eps)
   });
 }
 
-/* ---- Sainte-Laguë (Divisor Method) ---- */
-function modifiedSainteLague(votes, seats, nationalVotes, validParties) {
-  const alloc = Object.fromEntries(validParties.map(p => [p, 0]));
-
-  for (let s = 0; s < seats; s++) {
-    const quotients = validParties.map(p => {
-      const divisor = alloc[p] === 0 ? 1.4 : (2 * alloc[p] + 1);
-      return { p, q: (votes[p] || 0) / divisor };
-    });
-
-    let best = quotients[0];
-    for (let i = 1; i < quotients.length; i++) {
-      const x = quotients[i];
-      if (x.q > best.q) best = x;
+/* ---- D’Hondt ---- */
+function dhondtSeats(votes,seats=6,nationalVotes,validParties){
+  const alloc=Object.fromEntries(validParties.map(p=>[p,0]));
+  for(let s=0;s<seats;s++){
+    const quotients=validParties.map(p=>({p,q:(votes[p]||0)/(alloc[p]+1)}));
+    let best=quotients[0];
+    for(let i=1;i<quotients.length;i++){
+      const x=quotients[i];
+      if(x.q>best.q||(Math.abs(x.q-best.q)<1e-12&&(nationalVotes[x.p]||0)>(nationalVotes[best.p]||0)))best=x;
     }
-    alloc[best.p] += 1;
+    alloc[best.p]+=1;
   }
   return alloc;
 }
 
 /* ---- Calculate ---- */
-function calculate() {
-  const nationalVotes = {};
-
-  // ---- Load user input ----
-  parties.forEach((p, i) => {
-    p.votes = parseFloat(document.getElementById(`votes-${i}`).value) || 0;
-    nationalVotes[p.name] = p.votes;  // % of national vote
+function calculate(){
+  const nationalVotes={};
+  parties.forEach((p,i)=>{
+    p.votes=parseFloat(document.getElementById(`votes-${i}`).value)||0;
+    nationalVotes[p.name]=p.votes;
   });
 
-  // ---- Generate swing-adjusted constituency shares ----
-  const perConst = computeConstituencyShares();
+  const perConst=computeConstituencyShares();
+  const totals=Object.fromEntries(PARTIES.map(p=>[p,0]));
 
-  // REAL parties = those that can receive seats
-  const REAL_PARTIES = PARTIES.filter(
-    p => !["Left", "Right", "OTH"].includes(p)
-  );
+perConst.forEach(row => {
+  const sVotes = row; // local votes in this constituency
 
-  // ---- Initialise seat totals (only real parties) ----
-  const totals = Object.fromEntries(REAL_PARTIES.map(p => [p, 0]));
+  // 👇 Calculate total valid vote sum in this constituency
+  let totalVotes = 0;
+  PARTIES.forEach(p => totalVotes += sVotes[p] || 0);
 
-  // ---- STEP 2: Constituency seats = 150 seats using Modified Sainte-Laguë ----
-  perConst.forEach(row => {
-    const sVotes = row;
+  // 👇 Apply a constituency-level threshold (e.g. 3% of local valid votes)
+  const validParties = PARTIES.filter(p => (sVotes[p] || 0) >= 0.03 * totalVotes);
 
-    // ❗ Norway has NO constituency threshold → all real parties participate
-    const validParties = REAL_PARTIES;
+  // 👇 Allocate seats only among those parties
+  const s = dhondtSeats(sVotes, CONSTITUENCY_SEATS[row.name] || 6, nationalVotes, validParties);
 
-    // Allocate seats for this constituency
-    const allocated = modifiedSainteLague(
-      sVotes,
-      CONSTITUENCY_SEATS[row.name],
-      nationalVotes,
-      validParties
-    );
+  PARTIES.forEach(p => totals[p] += (s[p] || 0));
+});
 
-    // Add to national totals
-    REAL_PARTIES.forEach(p => {
-      totals[p] += (allocated[p] || 0);
-    });
+  PARTIES.forEach((n,i)=>{
+    const seats=totals[n];
+    document.getElementById(`seats-${i}`).textContent=seats;
+    parties[i].final=seats;
+
+    const diff=seats-(PREV_2023[n]||0);
+    const diffCell=document.getElementById(`diff-${i}`);
+    if(diff>0){diffCell.textContent=`+${diff}`;diffCell.className='diff-column positive';}
+    else if(diff<0){diffCell.textContent=`${diff}`;diffCell.className='diff-column negative';}
+    else{diffCell.textContent='(=)';diffCell.className='diff-column equal';}
   });
 
-  // ---- STEP 3: National threshold for leveling seats (4%) ----
-  const NATIONAL_THRESHOLD = 0.04;
-  const eligible = REAL_PARTIES.filter(
-    p => (nationalVotes[p] / 100) >= NATIONAL_THRESHOLD
-  );
-
-  // ---- STEP 4: Allocate 19 leveling seats ----
-  function allocateLevelingSeats(totalConstituency, nationalVotes) {
-    const ideal = Object.fromEntries(eligible.map(p => [p, 0]));
-    const totalSeats = 169;
-
-    // National ideal allocation
-    for (let s = 0; s < totalSeats; s++) {
-      const quotients = eligible.map(p => {
-        const divisor = ideal[p] === 0 ? 1.4 : (2 * ideal[p] + 1);
-        return { p, q: (nationalVotes[p] / 100) / divisor };
-      });
-
-      const best = quotients.reduce((a, b) => (b.q > a.q ? b : a));
-      ideal[best.p] += 1;
-    }
-
-    // leveling = ideal – constituency seats
-    const leveling = {};
-    eligible.forEach(p => {
-      leveling[p] = Math.max(0, ideal[p] - totalConstituency[p]);
-    });
-
-    return leveling;
-  }
-
-  const leveling = allocateLevelingSeats(totals, nationalVotes);
-
-  // Apply leveling seats
-  eligible.forEach(p => {
-    totals[p] += leveling[p];
-  });
-
-  // ---- STEP 5: Update seats and +/- output ----
-  REAL_PARTIES.forEach((p, i) => {
-    const seats = totals[p];
-    document.getElementById(`seats-${i}`).textContent = seats;
-    parties[i].final = seats;
-
-    const diff = seats - (PREV_2023[p] || 0);
-    const diffCell = document.getElementById(`diff-${i}`);
-
-    if (diff > 0) {
-      diffCell.textContent = `+${diff}`;
-      diffCell.className = "diff-column positive";
-    } else if (diff < 0) {
-      diffCell.textContent = `${diff}`;
-      diffCell.className = "diff-column negative";
-    } else {
-      diffCell.textContent = "(=)";
-      diffCell.className = "diff-column equal";
-    }
-  });
-
-  // ---- STEP 6: Coalition sums for Left/Right visual rows ----
-  const CDX_total =
-    (totals["Ap"] || 0) +
-    (totals["SV"] || 0) +
-    (totals["Sp"] || 0) +
-    (totals["Rødt"] || 0) +
-    (totals["MDG"] || 0);
-
-  const CSX_total =
-    (totals["FrP"] || 0) +
-    (totals["Høyre"] || 0) +
-    (totals["KrF"] || 0) +
-    (totals["V"] || 0);
-
-  const CDX_index = PARTIES.indexOf("Left");
-  const CSX_index = PARTIES.indexOf("Right");
-
-  if (CDX_index !== -1)
-    document.getElementById(`seats-${CDX_index}`).textContent = CDX_total;
-  if (CSX_index !== -1)
-    document.getElementById(`seats-${CSX_index}`).textContent = CSX_total;
-
-  // ---- STEP 7: National total = must be exactly 169 ----
-  document.getElementById("total-seats").textContent =
-    REAL_PARTIES.reduce((sum, p) => sum + (totals[p] || 0), 0);
-
-  // Reset calculate button
-  document.getElementById("calculate").style.background = "#008500";
-
-  // Update coalition builder
+  document.getElementById('total-seats').textContent=Object.values(totals).reduce((a,b)=>a+b,0);
+  document.getElementById('calculate').style.background='#008500';
   updateCoalitionFromTotals(totals);
 }
 
@@ -731,9 +529,7 @@ overlay.innerHTML = "";
 legend.innerHTML = "";
 
 // 🟢 Only show parties that currently have seats
-const validParties = PARTIES.filter(
-  n => (t[n] || 0) > 0 && n !== "Left" && n !== "Right"
-);
+const validParties = PARTIES.filter(n => (t[n] || 0) > 0);
 
 // ❌ Do NOT clear "selected" — this allows zero-seat parties to stay selected
 // selected = selected.filter(n => validParties.includes(n));
