@@ -650,19 +650,43 @@ const s = sainteLagueSeats(
   PARTIES.forEach(p => totals[p] += (s[p] || 0));
 });
 
-  PARTIES.forEach((n,i)=>{
-    const seats=totals[n];
-    document.getElementById(`seats-${i}`).textContent=seats;
-    parties[i].final=seats;
+// ---- FIRST: generate district seats only ----
+// (totals already holds district seats at this point)
 
-    const diff=seats-(PREV_2023[n]||0);
-    const diffCell=document.getElementById(`diff-${i}`);
-    if(diff>0){diffCell.textContent=`+${diff}`;diffCell.className='diff-column positive';}
-    else if(diff<0){diffCell.textContent=`${diff}`;diffCell.className='diff-column negative';}
-    else{diffCell.textContent='(=)';diffCell.className='diff-column equal';}
-  });
+// ---- Build constituency-level map for levelling allocation ----
+const constituencyResults = {};
+perConst.forEach(row => {
+  constituencyResults[row.name] = {};
+  const sVotes = row;
+  const s = sainteLagueSeats(sVotes, CONSTITUENCY_SEATS[row.name], PARTIES);
+  PARTIES.forEach(p => constituencyResults[row.name][p] = s[p] || 0);
+});
 
-  document.getElementById('total-seats').textContent=Object.values(totals).reduce((a,b)=>a+b,0);
+// ---- Allocate levelling seats ----
+const topups = allocateLevellingSeats(nationalVotes, constituencyResults, CONSTITUENCY_SEATS);
+
+// ---- Add topups to totals ----
+PARTIES.forEach(p => {
+  totals[p] += topups[p] || 0;
+});
+
+// ---- NOW update seats in the table (district + levelling) ----
+PARTIES.forEach((n,i)=>{
+  const seats = totals[n];
+  document.getElementById(`seats-${i}`).textContent = seats;
+  parties[i].final = seats;
+
+  const diff = seats - (PREV_2023[n] || 0);
+  const diffCell = document.getElementById(`diff-${i}`);
+  if (diff > 0) { diffCell.textContent = `+${diff}`; diffCell.className = 'diff-column positive'; }
+  else if (diff < 0) { diffCell.textContent = `${diff}`; diffCell.className = 'diff-column negative'; }
+  else { diffCell.textContent = '(=)'; diffCell.className = 'diff-column equal'; }
+});
+
+// ---- update total ----
+document.getElementById('total-seats').textContent =
+  Object.values(totals).reduce((a,b)=>a+b,0);
+
   document.getElementById('calculate').style.background='#008500';
 
     // Build constituency-level seat map for levelling seat allocation
