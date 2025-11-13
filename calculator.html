@@ -588,7 +588,7 @@ function calculate(){
  const validParties = PARTIES.filter(
   p =>
     !["OTH", "Left", "Right"].includes(p) &&
-    ((sVotes[p] || 0) + EPS) >= 0.001 * totalVotes
+    ((sVotes[p] || 0) + EPS) >= 0.03 * totalVotes
 );
 
     // Modified Sainte-Laguë
