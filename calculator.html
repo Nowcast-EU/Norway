@@ -5,25 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
 <!-- Primary Meta Tags -->
-<title>🇪🇸 Norway | Interactive Seat Calculator</title>
-<meta name="title" content="🇪🇸 Norway | Interactive Seat Calculator">
+<title>🇳🇴 Norway | Interactive Seat Calculator</title>
+<meta name="title" content="🇳🇴 Norway | Interactive Seat Calculator">
 <meta name="description" content="">
 
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://nowcast-eu.github.io/Norway/calculator.html">
-<meta property="og:title" content="🇪🇸 Norway | Interactive Seat Calculator">
+<meta property="og:title" content="🇳🇴 Norway | Interactive Seat Calculator">
 <meta property="og:description" content="">
 <meta property="og:image" content="https://nowcast-eu.github.io/Norway/thumbnail.png">
 
 <!-- Twitter -->
 <meta name="twitter:card" content="summary">
 <meta name="twitter:url" content="https://nowcast-eu.github.io/Norway/calculator.html">
-<meta name="twitter:title" content="🇪🇸 Norway | Interactive Seat Calculator">
+<meta name="twitter:title" content="🇳🇴 Norway | Interactive Seat Calculator">
 <meta name="twitter:description" content="">
 <meta name="twitter:image" content="https://nowcast-eu.github.io/Norway/thumbnail.png">
 
-<link rel="icon" type="image/png" href="https://nowcast-eu.github.io/Norway/ES_favicon.png">
+<link rel="icon" type="image/png" href="https://nowcast-eu.github.io/Norway/NO_favicon.png">
 
 <style>
   body {
@@ -309,9 +309,103 @@ tfoot td {
 <script>
 const BASELINE = {"baseline_national": {"Ap": 0.28, "SV": 0.056, "Sp": 0.056, "Rødt": 0.053, "MDG": 0.047, "FrP": 0.239, "Høyre": 0.147, "KrF": 0.042, "Venstre": 0.037},
     
- "constituencies": [PLACEHOLDER]};
+ "constituencies": [{
+  name: "Akershus",
+  Ap: 0.273, SV: 0.052, Sp: 0.029, Rødt: 0.042, MDG: 0.054, FrP: 0.236, Høyre: 0.194, KrF: 0.026, Venstre: 0.054
+},
+{
+  name: "Aust-Agder",
+  Ap: 0.269, SV: 0.039, Sp: 0.051, Rødt: 0.046, MDG: 0.034, FrP: 0.278, Høyre: 0.130, KrF: 0.081, Venstre: 0.026
+},
+{
+  name: "Buskerud",
+  Ap: 0.294, SV: 0.044, Sp: 0.055, Rødt: 0.040, MDG: 0.036, FrP: 0.276, Høyre: 0.153, KrF: 0.028, Venstre: 0.031
+},
+{
+  name: "Finnmark",
+  Ap: 0.281, SV: 0.052, Sp: 0.055, Rødt: 0.098, MDG: 0.022, FrP: 0.245, Høyre: 0.059, KrF: 0.021, Venstre: 0.012
+},
+{
+  name: "Hedmark",
+  Ap: 0.350, SV: 0.045, Sp: 0.136, Rødt: 0.048, MDG: 0.028, FrP: 0.211, Høyre: 0.090, KrF: 0.022, Venstre: 0.019
+},
+{
+  name: "Hordaland",
+  Ap: 0.267, SV: 0.058, Sp: 0.042, Rødt: 0.050, MDG: 0.049, FrP: 0.238, Høyre: 0.169, KrF: 0.050, Venstre: 0.034
+},
+{
+  name: "Møre og Romsdal",
+  Ap: 0.236, SV: 0.038, Sp: 0.073, Rødt: 0.035, MDG: 0.031, FrP: 0.323, Høyre: 0.126, KrF: 0.068, Venstre: 0.030
+},
+{
+  name: "Nordland",
+  Ap: 0.306, SV: 0.057, Sp: 0.086, Rødt: 0.066, MDG: 0.029, FrP: 0.256, Høyre: 0.112, KrF: 0.024, Venstre: 0.020
+},
+{
+  name: "Nord-Trøndelag",
+  Ap: 0.363, SV: 0.042, Sp: 0.148, Rødt: 0.052, MDG: 0.024, FrP: 0.195, Høyre: 0.090, KrF: 0.026, Venstre: 0.018
+},
+{
+  name: "Oppland",
+  Ap: 0.332, SV: 0.045, Sp: 0.158, Rødt: 0.045, MDG: 0.029, FrP: 0.214, Høyre: 0.092, KrF: 0.022, Venstre: 0.022
+},
+{
+  name: "Oslo",
+  Ap: 0.257, SV: 0.107, Sp: 0.008, Rødt: 0.072, MDG: 0.103, FrP: 0.143, Høyre: 0.185, KrF: 0.021, Venstre: 0.073
+},
+{
+  name: "Rogaland",
+  Ap: 0.237, SV: 0.037, Sp: 0.050, Rødt: 0.055, MDG: 0.027, FrP: 0.287, Høyre: 0.153, KrF: 0.084, Venstre: 0.026
+},
+{
+  name: "Sogn og Fjordane",
+  Ap: 0.309, SV: 0.043, Sp: 0.160, Rødt: 0.040, MDG: 0.033, FrP: 0.208, Høyre: 0.102, KrF: 0.043, Venstre: 0.029
+},
+{
+  name: "Sør-Trøndelag",
+  Ap: 0.320, SV: 0.069, Sp: 0.068, Rødt: 0.060, MDG: 0.058, FrP: 0.198, Høyre: 0.125, KrF: 0.025, Venstre: 0.037
+},
+{
+  name: "Telemark",
+  Ap: 0.313, SV: 0.041, Sp: 0.062, Rødt: 0.059, MDG: 0.033, FrP: 0.261, Høyre: 0.110, KrF: 0.050, Venstre: 0.021
+},
+{
+  name: "Troms",
+  Ap: 0.295, SV: 0.072, Sp: 0.063, Rødt: 0.074, MDG: 0.036, FrP: 0.258, Høyre: 0.109, KrF: 0.029, Venstre: 0.020
+},
+{
+  name: "Vest-Agder",
+  Ap: 0.228, SV: 0.039, Sp: 0.040, Rødt: 0.040, MDG: 0.035, FrP: 0.277, Høyre: 0.135, KrF: 0.130, Venstre: 0.031
+},
+{
+  name: "Vestfold",
+  Ap: 0.275, SV: 0.041, Sp: 0.033, Rødt: 0.049, MDG: 0.043, FrP: 0.276, Høyre: 0.165, KrF: 0.041, Venstre: 0.035
+},
+{
+  name: "Østfold",
+  Ap: 0.298, SV: 0.043, Sp: 0.048, Rødt: 0.052, MDG: 0.034, FrP: 0.287, Høyre: 0.125, KrF: 0.039, Venstre: 0.025
+}
+]};
 
-const CONSTITUENCY_SEATS = {PLACEHOLDER};
+const CONSTITUENCY_SEATS = { "Akershus": 18,
+  "Aust-Agder": 3,
+  "Buskerud": 7,
+  "Finnmark": 4,
+  "Hedmark": 6,
+  "Hordaland": 15,
+  "Møre og Romsdal": 7,
+  "Nordland": 8,
+  "Nord-Trøndelag": 4,
+  "Oppland": 5,
+  "Oslo": 19,
+  "Rogaland": 13,
+  "Sogn og Fjordane": 3,
+  "Sør-Trøndelag": 9,
+  "Telemark": 5,
+  "Troms": 5,
+  "Vest-Agder": 5,
+  "Vestfold": 6,
+  "Østfold": 8};
 
 
 /* ---- Party setup ---- */
@@ -437,18 +531,28 @@ function computeConstituencyShares(){
   });
 }
 
-/* ---- D’Hondt ---- */
-function dhondtSeats(votes,seats=6,nationalVotes,validParties){
-  const alloc=Object.fromEntries(validParties.map(p=>[p,0]));
-  for(let s=0;s<seats;s++){
-    const quotients=validParties.map(p=>({p,q:(votes[p]||0)/(alloc[p]+1)}));
-    let best=quotients[0];
-    for(let i=1;i<quotients.length;i++){
-      const x=quotients[i];
-      if(x.q>best.q||(Math.abs(x.q-best.q)<1e-12&&(nationalVotes[x.p]||0)>(nationalVotes[best.p]||0)))best=x;
-    }
-    alloc[best.p]+=1;
+// ---- Modified Sainte-Laguë (Norway) ----
+// first divisor = 1.4, then 3, 5, 7, 9...
+function sainteLagueSeats(votes, seats, validParties) {
+  const alloc = Object.fromEntries(validParties.map(p => [p, 0]));
+
+  for (let s = 0; s < seats; s++) {
+    let bestParty = null;
+    let bestQuotient = -1;
+
+    validParties.forEach(p => {
+      const divisor = alloc[p] === 0 ? 1.4 : (2 * alloc[p] + 1); // 1.4, 3, 5, 7...
+      const quotient = (votes[p] || 0) / divisor;
+
+      if (quotient > bestQuotient) {
+        bestQuotient = quotient;
+        bestParty = p;
+      }
+    });
+
+    alloc[bestParty] += 1;
   }
+
   return alloc;
 }
 
@@ -466,15 +570,11 @@ function calculate(){
 perConst.forEach(row => {
   const sVotes = row; // local votes in this constituency
 
-  // 👇 Calculate total valid vote sum in this constituency
-  let totalVotes = 0;
-  PARTIES.forEach(p => totalVotes += sVotes[p] || 0);
+// 👇 All parties are valid — no constituency threshold
+const validParties = PARTIES;
 
-  // 👇 Apply a constituency-level threshold (e.g. 3% of local valid votes)
-  const validParties = PARTIES.filter(p => (sVotes[p] || 0) >= 0.03 * totalVotes);
-
-  // 👇 Allocate seats only among those parties
-  const s = dhondtSeats(sVotes, CONSTITUENCY_SEATS[row.name] || 6, nationalVotes, validParties);
+// 👇 Allocate seats among all parties
+const s = sainteLagueSeats(sVotes, CONSTITUENCY_SEATS[row.name] || 6, nationalVotes, validParties);
 
   PARTIES.forEach(p => totals[p] += (s[p] || 0));
 });
