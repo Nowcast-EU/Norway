@@ -676,6 +676,88 @@ function computeTopupsMethodA(nationalVotes, districtTotals) {
   return scaled;
 }
 
+  // ---- FULL REAL NORWEGIAN LEVELLING SEAT SYSTEM ----
+function computeRealNorwegianTopups(nationalVotes, districtResults, constituencyShares) {
+
+  const TOTAL_TOPUPS = 19;
+
+  const totalVotes = Object.values(nationalVotes).reduce((a,b)=>a+b,0);
+
+  // 1) Parties eligible for levelling seats (≥4%)
+  const eligible = PARTIES.filter(p => (nationalVotes[p] / totalVotes) >= 0.04);
+
+  // 2) Ideal national proportional representation (169 seats)
+  const ideal169 = nationalAllocation169(nationalVotes);
+
+  // 3) Levelling seats needed per party
+  const remaining = {};
+  PARTIES.forEach(p => {
+    const need = ideal169[p] - (districtResults[p] || 0);
+    remaining[p] = (eligible.includes(p) ? Math.max(0, need) : 0);
+  });
+
+  // Stop early if no one needs top-ups
+  if (Object.values(remaining).reduce((a,b)=>a+b,0) === 0) {
+    return Object.fromEntries(PARTIES.map(p => [p, 0]));
+  }
+
+  // 4) Track which constituencies have already received a levelling seat
+  const used = new Set();
+
+  // 5) Working copy of district seats per constituency and party
+  const constituencySeats = {};
+  BASELINE.constituencies.forEach(c => {
+    constituencySeats[c.name] = {};
+    PARTIES.forEach(p => {
+      constituencySeats[c.name][p] = districtResults.byConstituency[c.name][p] || 0;
+    });
+  });
+
+  // Final result
+  const topups = Object.fromEntries(PARTIES.map(p => [p, 0]));
+
+  // 6) Allocate all 19 levelling seats
+  for (let seat = 0; seat < TOTAL_TOPUPS; seat++) {
+
+    let best = null;
+
+    BASELINE.constituencies.forEach(cRow => {
+      const cname = cRow.name;
+
+      if (used.has(cname)) return; // at most 1 levelling seat per constituency
+
+      eligible.forEach(p => {
+        if (remaining[p] <= 0) return;
+
+        // Local quotient for this (party, constituency)
+        const votesLocal = constituencyShares.find(x => x.name === cname)[p] || 0;
+        const seatsHere = constituencySeats[cname][p] || 0;
+
+        const score = votesLocal / (seatsHere + 1);
+
+        if (!best || score > best.score) {
+          best = { party: p, cname, score };
+        }
+      });
+
+    });
+
+    if (!best) break; // should not happen
+
+    // Award the levelling seat
+    topups[best.party] += 1;
+    remaining[best.party] -= 1;
+
+    // Mark constituency as used
+    used.add(best.cname);
+
+    // Increase local seat count (affects next-round quotients)
+    constituencySeats[best.cname][best.party] += 1;
+  }
+
+  return topups;
+}
+
 function calculate() {
   const nationalVotes = {};
   parties.forEach((p,i) => {
@@ -699,8 +781,21 @@ function calculate() {
 
   // totals now contains the 150 district seats
 
-  // ---- 2. Compute the 19 national top-up seats (METHOD A) ----
-  const topups = computeTopupsMethodA(nationalVotes, totals);
+ // Build district seat map by constituency for real levelling method
+const districtByConst = {};
+perConst.forEach(row => {
+  const cname = row.name;
+  districtByConst[cname] = {};
+  const result = sainteLagueSeats(row, CONSTITUENCY_SEATS[cname], PARTIES);
+  PARTIES.forEach(p => districtByConst[cname][p] = result[p] || 0);
+});
+
+// Full real Norwegian levelling allocation
+const topups = computeRealNorwegianTopups(
+  nationalVotes,
+  { ...totals, byConstituency: districtByConst },
+  perConst
+);
 
   // ---- 3. Add top-ups to district seats ----
   PARTIES.forEach(p => {
