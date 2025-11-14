@@ -556,95 +556,126 @@ function sainteLagueSeats(votes, seats, validParties) {
   return alloc;
 }
 
-// ---- Simplified Norwegian top-up allocation (19 seats, 4% rule) ----
-function allocateLevellingSeatsSimple(nationalVotes, districtSeatTotals) {
-  const TOTAL_TOPUP = 19;
+// ---- NATIONAL Sainte-Laguë for ALL 169 seats (Method A) ----
+function nationalAllocation169(nationalVotes) {
+  const TOTAL_SEATS = 169;
 
-  // Step 1 — determine eligible parties (4% national threshold)
-  const totalVotes = Object.values(nationalVotes).reduce((a,b) => a+b, 0);
-  const eligible = PARTIES.filter(p => (nationalVotes[p] / totalVotes) >= 0.04);
+  const alloc = Object.fromEntries(PARTIES.map(p => [p, 0]));
+  const divisorIndex = Object.fromEntries(PARTIES.map(p => [p, 0]));
 
-  // Step 2 — modified Sainte-Laguë national allocation (1.4, 3, 5, ...)
-  const natAlloc = Object.fromEntries(eligible.map(p => [p, 0]));
-  const divisors = Object.fromEntries(eligible.map(p => [p, 0]));
-
-  for (let i = 0; i < TOTAL_TOPUP; i++) {
+  for (let i = 0; i < TOTAL_SEATS; i++) {
     let bestParty = null;
     let bestScore = -1;
 
-    eligible.forEach(p => {
-      const divisor = (divisors[p] === 0 ? 1.4 : (2 * divisors[p] + 1));
+    PARTIES.forEach(p => {
+      const divisor = (divisorIndex[p] === 0 ? 1.4 : (2 * divisorIndex[p] + 1));
       const score = nationalVotes[p] / divisor;
-
       if (score > bestScore) {
         bestScore = score;
         bestParty = p;
       }
     });
 
-    natAlloc[bestParty] += 1;
-    divisors[bestParty] += 1;
+    alloc[bestParty] += 1;
+    divisorIndex[bestParty] += 1;
   }
 
-  return natAlloc; // add these to district seats
+  return alloc;
 }
 
-/* ---- Calculate ---- */
-function calculate(){
-  const nationalVotes={};
-  parties.forEach((p,i)=>{
-    p.votes=parseFloat(document.getElementById(`votes-${i}`).value)||0;
-    nationalVotes[p.name]=p.votes;
+// ---- Compute EXACT 19 levelling seats from national minus district ----
+function computeTopupsMethodA(nationalVotes, districtTotals) {
+  // Step 1: ideal national proportional seats (all 169)
+  const ideal = nationalAllocation169(nationalVotes);
+
+  // Step 2: raw difference = proportional seats minus district seats
+  let rawTopups = {};
+  PARTIES.forEach(p => {
+    rawTopups[p] = ideal[p] - districtTotals[p];
   });
 
-  const perConst=computeConstituencyShares();
-  const totals=Object.fromEntries(PARTIES.map(p=>[p,0]));
+  // Step 3: force total topups to equal EXACTLY 19
+  let sumRaw = Object.values(rawTopups).reduce((a,b)=>a+b,0);
 
-perConst.forEach(row => {
-  const sVotes = row; // local votes in this constituency
+  // If already 19, return as-is
+  if (sumRaw === 19) return rawTopups;
 
-// 👇 All parties are valid — no constituency threshold
-const validParties = PARTIES;
+  // Otherwise scale proportionally
+  const scale = 19 / sumRaw;
+  let scaled = {};
+  let leftover = 19;
 
-// 👇 Allocate seats among all parties
-const s = sainteLagueSeats(
-  sVotes,
-  CONSTITUENCY_SEATS[row.name] || 6,
-  validParties
-);
+  // First round: floor() scaled values
+  PARTIES.forEach(p => {
+    const val = rawTopups[p] * scale;
+    const floorVal = Math.max(0, Math.floor(val));
+    scaled[p] = floorVal;
+    leftover -= floorVal;
+  });
 
-  PARTIES.forEach(p => totals[p] += (s[p] || 0));
-});
+  // Distribute leftover seats to parties with biggest fractional remainders
+  const remainders = PARTIES.map(p => ({
+    party: p,
+    remainder: (rawTopups[p] * scale) - scaled[p]
+  }));
+  remainders.sort((a,b) => b.remainder - a.remainder);
 
-// ---- FIRST: generate district seats only ----
-// (totals already holds district seats at this point)
+  for (let i = 0; i < leftover; i++) {
+    scaled[remainders[i].party] += 1;
+  }
 
-// levelling seats (simple national method)
-const topups = allocateLevellingSeatsSimple(nationalVotes, totals);
+  return scaled;
+}
 
-// add levelling to totals
-PARTIES.forEach(p => {
-  totals[p] += topups[p] || 0;
-});
+function calculate() {
+  const nationalVotes = {};
+  parties.forEach((p,i) => {
+    p.votes = parseFloat(document.getElementById(`votes-${i}`).value) || 0;
+    nationalVotes[p.name] = p.votes;
+  });
 
-// ---- NOW update seats in the table (district + levelling) ----
-PARTIES.forEach((n,i)=>{
-  const seats = totals[n];
-  document.getElementById(`seats-${i}`).textContent = seats;
-  parties[i].final = seats;
+  // ---- 1. Constituency projection + 150 district seats ----
+  const perConst = computeConstituencyShares();
+  const totals = Object.fromEntries(PARTIES.map(p => [p, 0]));
 
-  const diff = seats - (PREV_2023[n] || 0);
-  const diffCell = document.getElementById(`diff-${i}`);
-  if (diff > 0) { diffCell.textContent = `+${diff}`; diffCell.className = 'diff-column positive'; }
-  else if (diff < 0) { diffCell.textContent = `${diff}`; diffCell.className = 'diff-column negative'; }
-  else { diffCell.textContent = '(=)'; diffCell.className = 'diff-column equal'; }
-});
+  perConst.forEach(row => {
+    const sVotes = row;
+    const s = sainteLagueSeats(
+      sVotes,
+      CONSTITUENCY_SEATS[row.name],
+      PARTIES
+    );
+    PARTIES.forEach(p => totals[p] += (s[p] || 0));
+  });
 
-// ---- update total ----
-document.getElementById('total-seats').textContent =
-  Object.values(totals).reduce((a,b)=>a+b,0);
+  // totals now contains the 150 district seats
+
+  // ---- 2. Compute the 19 national top-up seats (METHOD A) ----
+  const topups = computeTopupsMethodA(nationalVotes, totals);
+
+  // ---- 3. Add top-ups to district seats ----
+  PARTIES.forEach(p => {
+    totals[p] += topups[p] || 0;
+  });
+
+  // ---- 4. Update table ----
+  PARTIES.forEach((n,i)=>{
+    const seats = totals[n];
+    document.getElementById(`seats-${i}`).textContent = seats;
+    parties[i].final = seats;
+
+    const diff = seats - (PREV_2023[n] || 0);
+    const diffCell = document.getElementById(`diff-${i}`);
+    if (diff > 0) { diffCell.textContent = `+${diff}`; diffCell.className = 'diff-column positive'; }
+    else if (diff < 0) { diffCell.textContent = `${diff}`; diffCell.className = 'diff-column negative'; }
+    else { diffCell.textContent = '(=)'; diffCell.className = 'diff-column equal'; }
+  });
+
+  document.getElementById('total-seats').textContent =
+    Object.values(totals).reduce((a,b)=>a+b,0);
 
   document.getElementById('calculate').style.background='#008500';
+
   updateCoalitionFromTotals(totals);
 }
 
