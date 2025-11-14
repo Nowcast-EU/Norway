@@ -584,96 +584,24 @@ function nationalAllocation169(nationalVotes) {
 }
 
 // ---- Compute EXACT 19 levelling seats from national minus district (4% rule) ----
-function computeTopupsMethodA(nationalVotes, districtTotals) {
-  const TOTAL_TOPUP = 19;
+const topups = computeTopupsPolling(nationalVotes, totals);
+PARTIES.forEach(p => totals[p] += topups[p]);
 
-  const totalVotes = Object.values(nationalVotes).reduce((a, b) => a + b, 0);
-  const eligible = PARTIES.filter(p => (nationalVotes[p] / totalVotes) >= 0.04);
-
-  // 1) Ideal national allocation for all 169 seats (using current votes)
-  const idealAll = nationalAllocation169(nationalVotes);
-
-  // 2) Raw top-ups for eligible parties only: max(0, ideal - district)
-  const rawTopups = {};
-  let sumRaw = 0;
-
+  const top = {};
   PARTIES.forEach(p => {
-    if (eligible.includes(p)) {
-      const diff = idealAll[p] - (districtTotals[p] || 0);
-      const val = Math.max(0, diff); // levelling seats cannot be negative
-      rawTopups[p] = val;
-      sumRaw += val;
-    } else {
-      rawTopups[p] = 0; // below 4% => no levelling seats
-    }
+    const raw = ideal[p] - districtTotals[p];
+    top[p] = raw > 0 ? raw : 0;
   });
 
-  // Edge case: if no one "needs" top-ups, fall back to a simple 19-seat
-  // national Sainte-Laguë among eligible parties
-  if (sumRaw <= 0) {
-    const fallbackAlloc = {};
-    PARTIES.forEach(p => fallbackAlloc[p] = 0);
-
-    if (eligible.length > 0) {
-      // mini Sainte-Laguë just for 19 levelling seats
-      const alloc = Object.fromEntries(eligible.map(p => [p, 0]));
-      const divIndex = Object.fromEntries(eligible.map(p => [p, 0]));
-
-      for (let i = 0; i < TOTAL_TOPUP; i++) {
-        let bestParty = null;
-        let bestScore = -1;
-
-        eligible.forEach(p => {
-          const divisor = (divIndex[p] === 0 ? 1.4 : (2 * divIndex[p] + 1));
-          const score = nationalVotes[p] / divisor;
-          if (score > bestScore) {
-            bestScore = score;
-            bestParty = p;
-          }
-        });
-
-        alloc[bestParty] += 1;
-        divIndex[bestParty] += 1;
-      }
-
-      eligible.forEach(p => {
-        fallbackAlloc[p] = alloc[p];
-      });
-    }
-
-    return fallbackAlloc;
-  }
-
-  // 3) Scale raw top-ups so they sum to EXACTLY 19
-  const scale = TOTAL_TOPUP / sumRaw;
-  const scaled = {};
-  let leftover = TOTAL_TOPUP;
-
-  eligible.forEach(p => {
-    const exact = rawTopups[p] * scale;
-    const base = Math.floor(exact);
-    scaled[p] = base;
-    leftover -= base;
-  });
-
-  // Non-eligible parties stay at 0
+  // Apply 4% threshold strictly
+  const totalVotes = Object.values(nationalVotes).reduce((a,b)=>a+b,0);
   PARTIES.forEach(p => {
-    if (!eligible.includes(p)) scaled[p] = 0;
+    if (nationalVotes[p] / totalVotes < 0.04) {
+      top[p] = 0;
+    }
   });
 
-  // 4) Distribute leftover seats by largest fractional remainder (eligible only)
-  const remainders = eligible.map(p => ({
-    party: p,
-    remainder: rawTopups[p] * scale - scaled[p]
-  })).sort((a, b) => b.remainder - a.remainder);
-
-  for (let i = 0; i < leftover; i++) {
-    if (remainders[i]) {
-      scaled[remainders[i].party] += 1;
-    }
-  }
-
-  return scaled;
+  return top;  // DO NOT rescale
 }
 
   // ---- FULL REAL NORWEGIAN LEVELLING SEAT SYSTEM ----
