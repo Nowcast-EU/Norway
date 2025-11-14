@@ -619,24 +619,10 @@ const s = sainteLagueSeats(
 // ---- FIRST: generate district seats only ----
 // (totals already holds district seats at this point)
 
-// ---- Build constituency-level map for levelling allocation ----
-const constituencyResults = {};
-perConst.forEach(row => {
-  constituencyResults[row.name] = {};
-  const sVotes = row;
-  const s = sainteLagueSeats(sVotes, CONSTITUENCY_SEATS[row.name], PARTIES);
-  PARTIES.forEach(p => constituencyResults[row.name][p] = s[p] || 0);
-});
-
 // levelling seats (simple national method)
 const topups = allocateLevellingSeatsSimple(nationalVotes, totals);
 
 // add levelling to totals
-PARTIES.forEach(p => {
-  totals[p] += topups[p] || 0;
-});
-
-// ---- Add topups to totals ----
 PARTIES.forEach(p => {
   totals[p] += topups[p] || 0;
 });
