@@ -556,47 +556,175 @@ function sainteLagueSeats(votes, seats, validParties) {
   return alloc;
 }
 
-/* ---- Calculate ---- */
-function calculate(){
-  const nationalVotes={};
-  parties.forEach((p,i)=>{
-    p.votes=parseFloat(document.getElementById(`votes-${i}`).value)||0;
-    nationalVotes[p.name]=p.votes;
+// ---- NATIONAL Sainte-Laguë for ALL 169 seats (Method A) ----
+function nationalAllocation169(nationalVotes) {
+  const TOTAL_SEATS = 169;
+
+  const alloc = Object.fromEntries(PARTIES.map(p => [p, 0]));
+  const divisorIndex = Object.fromEntries(PARTIES.map(p => [p, 0]));
+
+  for (let i = 0; i < TOTAL_SEATS; i++) {
+    let bestParty = null;
+    let bestScore = -1;
+
+    PARTIES.forEach(p => {
+      const divisor = (divisorIndex[p] === 0 ? 1.4 : (2 * divisorIndex[p] + 1));
+      const score = nationalVotes[p] / divisor;
+      if (score > bestScore) {
+        bestScore = score;
+        bestParty = p;
+      }
+    });
+
+    alloc[bestParty] += 1;
+    divisorIndex[bestParty] += 1;
+  }
+
+  return alloc;
+}
+
+// ---- Compute EXACT 19 levelling seats from national minus district (4% rule) ----
+function computeTopupsMethodA(nationalVotes, districtTotals) {
+  const TOTAL_TOPUP = 19;
+
+  const totalVotes = Object.values(nationalVotes).reduce((a, b) => a + b, 0);
+  const eligible = PARTIES.filter(p => (nationalVotes[p] / totalVotes) >= 0.04);
+
+  // 1) Ideal national allocation for all 169 seats (using current votes)
+  const idealAll = nationalAllocation169(nationalVotes);
+
+  // 2) Raw top-ups for eligible parties only: max(0, ideal - district)
+  const rawTopups = {};
+  let sumRaw = 0;
+
+  PARTIES.forEach(p => {
+    if (eligible.includes(p)) {
+      const diff = idealAll[p] - (districtTotals[p] || 0);
+      const val = Math.max(0, diff); // levelling seats cannot be negative
+      rawTopups[p] = val;
+      sumRaw += val;
+    } else {
+      rawTopups[p] = 0; // below 4% => no levelling seats
+    }
   });
 
-  const perConst=computeConstituencyShares();
-  const totals=Object.fromEntries(PARTIES.map(p=>[p,0]));
+  // Edge case: if no one "needs" top-ups, fall back to a simple 19-seat
+  // national Sainte-Laguë among eligible parties
+  if (sumRaw <= 0) {
+    const fallbackAlloc = {};
+    PARTIES.forEach(p => fallbackAlloc[p] = 0);
 
-perConst.forEach(row => {
-  const sVotes = row; // local votes in this constituency
+    if (eligible.length > 0) {
+      // mini Sainte-Laguë just for 19 levelling seats
+      const alloc = Object.fromEntries(eligible.map(p => [p, 0]));
+      const divIndex = Object.fromEntries(eligible.map(p => [p, 0]));
 
-// 👇 All parties are valid — no constituency threshold
-const validParties = PARTIES;
+      for (let i = 0; i < TOTAL_TOPUP; i++) {
+        let bestParty = null;
+        let bestScore = -1;
 
-// 👇 Allocate seats among all parties
-const s = sainteLagueSeats(
-  sVotes,
-  CONSTITUENCY_SEATS[row.name] || 6,
-  validParties
-);
+        eligible.forEach(p => {
+          const divisor = (divIndex[p] === 0 ? 1.4 : (2 * divIndex[p] + 1));
+          const score = nationalVotes[p] / divisor;
+          if (score > bestScore) {
+            bestScore = score;
+            bestParty = p;
+          }
+        });
 
-  PARTIES.forEach(p => totals[p] += (s[p] || 0));
-});
+        alloc[bestParty] += 1;
+        divIndex[bestParty] += 1;
+      }
 
+      eligible.forEach(p => {
+        fallbackAlloc[p] = alloc[p];
+      });
+    }
+
+    return fallbackAlloc;
+  }
+
+  // 3) Scale raw top-ups so they sum to EXACTLY 19
+  const scale = TOTAL_TOPUP / sumRaw;
+  const scaled = {};
+  let leftover = TOTAL_TOPUP;
+
+  eligible.forEach(p => {
+    const exact = rawTopups[p] * scale;
+    const base = Math.floor(exact);
+    scaled[p] = base;
+    leftover -= base;
+  });
+
+  // Non-eligible parties stay at 0
+  PARTIES.forEach(p => {
+    if (!eligible.includes(p)) scaled[p] = 0;
+  });
+
+  // 4) Distribute leftover seats by largest fractional remainder (eligible only)
+  const remainders = eligible.map(p => ({
+    party: p,
+    remainder: rawTopups[p] * scale - scaled[p]
+  })).sort((a, b) => b.remainder - a.remainder);
+
+  for (let i = 0; i < leftover; i++) {
+    if (remainders[i]) {
+      scaled[remainders[i].party] += 1;
+    }
+  }
+
+  return scaled;
+}
+
+function calculate() {
+  const nationalVotes = {};
+  parties.forEach((p,i) => {
+    p.votes = parseFloat(document.getElementById(`votes-${i}`).value) || 0;
+    nationalVotes[p.name] = p.votes;
+  });
+
+  // ---- 1. Constituency projection + 150 district seats ----
+  const perConst = computeConstituencyShares();
+  const totals = Object.fromEntries(PARTIES.map(p => [p, 0]));
+
+  perConst.forEach(row => {
+    const sVotes = row;
+    const s = sainteLagueSeats(
+      sVotes,
+      CONSTITUENCY_SEATS[row.name],
+      PARTIES
+    );
+    PARTIES.forEach(p => totals[p] += (s[p] || 0));
+  });
+
+  // totals now contains the 150 district seats
+
+  // ---- 2. Compute the 19 national top-up seats (METHOD A) ----
+  const topups = computeTopupsMethodA(nationalVotes, totals);
+
+  // ---- 3. Add top-ups to district seats ----
+  PARTIES.forEach(p => {
+    totals[p] += topups[p] || 0;
+  });
+
+  // ---- 4. Update table ----
   PARTIES.forEach((n,i)=>{
-    const seats=totals[n];
-    document.getElementById(`seats-${i}`).textContent=seats;
-    parties[i].final=seats;
+    const seats = totals[n];
+    document.getElementById(`seats-${i}`).textContent = seats;
+    parties[i].final = seats;
 
-    const diff=seats-(PREV_2023[n]||0);
-    const diffCell=document.getElementById(`diff-${i}`);
-    if(diff>0){diffCell.textContent=`+${diff}`;diffCell.className='diff-column positive';}
-    else if(diff<0){diffCell.textContent=`${diff}`;diffCell.className='diff-column negative';}
-    else{diffCell.textContent='(=)';diffCell.className='diff-column equal';}
+    const diff = seats - (PREV_2023[n] || 0);
+    const diffCell = document.getElementById(`diff-${i}`);
+    if (diff > 0) { diffCell.textContent = `+${diff}`; diffCell.className = 'diff-column positive'; }
+    else if (diff < 0) { diffCell.textContent = `${diff}`; diffCell.className = 'diff-column negative'; }
+    else { diffCell.textContent = '(=)'; diffCell.className = 'diff-column equal'; }
   });
 
-  document.getElementById('total-seats').textContent=Object.values(totals).reduce((a,b)=>a+b,0);
+  document.getElementById('total-seats').textContent =
+    Object.values(totals).reduce((a,b)=>a+b,0);
+
   document.getElementById('calculate').style.background='#008500';
+
   updateCoalitionFromTotals(totals);
 }
 
