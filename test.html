@@ -585,39 +585,50 @@ function nationalAllocation169(nationalVotes) {
 
 // ---- Compute EXACT 19 levelling seats from national minus district ----
 function computeTopupsMethodA(nationalVotes, districtTotals) {
-  // Step 1: ideal national proportional seats (all 169)
+  // Step 1: ideal national proportional seats (for all 169 seats)
   const ideal = nationalAllocation169(nationalVotes);
 
-  // Step 2: raw difference = proportional seats minus district seats
+  // Step 2: raw topups = ideal minus district seats
   let rawTopups = {};
   PARTIES.forEach(p => {
     rawTopups[p] = ideal[p] - districtTotals[p];
   });
 
-  // Step 3: force total topups to equal EXACTLY 19
+  // Step 3: apply 4% threshold — ONLY parties >= 4% may receive top-ups
+  const totalVotes = Object.values(nationalVotes).reduce((a,b)=>a+b,0);
+
+  PARTIES.forEach(p => {
+    const share = nationalVotes[p] / totalVotes;
+    if (share < 0.04) {
+      rawTopups[p] = 0;   // 🚫 below 4% get no levelling seats
+    }
+  });
+
+  // Step 4: total raw topups across eligible parties
   let sumRaw = Object.values(rawTopups).reduce((a,b)=>a+b,0);
 
-  // If already 19, return as-is
+  // If already 19, return
   if (sumRaw === 19) return rawTopups;
 
-  // Otherwise scale proportionally
+  // Step 5: Scale raw topups to exactly 19
   const scale = 19 / sumRaw;
   let scaled = {};
   let leftover = 19;
 
-  // First round: floor() scaled values
   PARTIES.forEach(p => {
     const val = rawTopups[p] * scale;
-    const floorVal = Math.max(0, Math.floor(val));
-    scaled[p] = floorVal;
-    leftover -= floorVal;
+    const fv = Math.max(0, Math.floor(val));
+    scaled[p] = fv;
+    leftover -= fv;
   });
 
-  // Distribute leftover seats to parties with biggest fractional remainders
+  // Step 6: distribute remaining seats to largest fractional remainders
   const remainders = PARTIES.map(p => ({
     party: p,
-    remainder: (rawTopups[p] * scale) - scaled[p]
-  }));
+    remainder: (rawTopups[p] * scale) - scaled[p],
+    eligible: (nationalVotes[p] / totalVotes) >= 0.04
+  })).filter(r => r.eligible);
+
   remainders.sort((a,b) => b.remainder - a.remainder);
 
   for (let i = 0; i < leftover; i++) {
